@@ -22,7 +22,7 @@ import com.java.logspringmvc.model.Log;
 
 
 public class Decryptlog {
-	private final String strkey = "1234567890123456";
+	private final String strkey = "1122334455667788";
 	private final String ALGORITHM = "AES";
     private final String TRANSFORMATION = "AES";
     
@@ -56,7 +56,25 @@ public class Decryptlog {
             throw new CryptoException("Error encrypting/decrypting file", ex);
         }
     }
-
+    
+	public static byte[] getBytesstr(String bytestring) 
+	{
+		int cnt=0;
+		System.out.println(bytestring);
+    	for(char c:bytestring.toCharArray()) 
+    	{
+    		if(c==',')cnt++;
+    	}
+    	byte[] bytes=new byte[cnt+1];
+    	int i=0;
+    	for(String s:bytestring.substring(1, bytestring.length()-1).split(",")) 
+    	{    		
+    		bytes[i++]=Byte.valueOf(s.trim());
+    	}
+    	return bytes;
+		
+	}
+	
 	public void decryptLog(String filename) throws CryptoException, FileNotFoundException 
 	{
 		File infile = new File(filename);
@@ -67,15 +85,17 @@ public class Decryptlog {
 		String msg=sc.nextLine();
         try 
         {
-            if (file.createNewFile()) 
+        	if (file.createNewFile()) 
             {
             	writer = new FileWriter(file);
-            	writer.write(decrypt(strkey,msg));
+            	String bytestring= new String(decrypt(strkey,msg));
+            	writer.write(new String(getBytesstr(bytestring)));
             }
             else 
             {
             	writer = new FileWriter(file, true);
-            	writer.write("\n" + decrypt(strkey,msg));
+            	String bytestring= new String(decrypt(strkey,msg));
+            	writer.write("\n" + new String(getBytesstr(bytestring)));
             }
             writer.close();
         } 
@@ -91,7 +111,8 @@ public class Decryptlog {
 		File infile = new File(filename);
 		Scanner sc=new Scanner(infile);
 		while(sc.hasNextLine()) {
-		String line=decrypt(strkey,sc.nextLine());
+		String bytestring= new String(decrypt(strkey,sc.nextLine()));	
+		String line=new String(getBytesstr(bytestring));
 		String[] cols=line.split(",");
 		Log log=new Log(cols[0].trim(),cols[1].trim(),cols[2].trim(),cols[3].trim());
 		logDAO.addlog(log);
