@@ -14,6 +14,10 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import com.java.logspringmvc.dao.LogDAO;
 import com.java.logspringmvc.dao.LogDAOImpl;
+import com.java.logspringmvc.dao.UsageMetricDAO;
+import com.java.logspringmvc.dao.UsageMetricDAOImpl;
+import com.java.logspringmvc.dao.UserDAO;
+import com.java.logspringmvc.dao.UserDAOImpl;
 import com.java.logspringmvc.util.Decryptlog;
 
 @Configuration
@@ -46,8 +50,18 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     }
      
     @Bean
-    public LogDAO getContactDAO() {
+    public LogDAO getLogDAO() {
         return new LogDAOImpl(getDataSource());
+    }
+    
+    @Bean
+    public UserDAO getUserDAO() {
+        return new UserDAOImpl(getDataSource());
+    }
+    
+    @Bean
+    public UsageMetricDAO getUsageMetricDAO() {
+        return new UsageMetricDAOImpl(getDataSource());
     }
     
     @Bean

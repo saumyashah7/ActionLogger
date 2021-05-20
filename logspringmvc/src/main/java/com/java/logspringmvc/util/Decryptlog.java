@@ -2,10 +2,12 @@ package com.java.logspringmvc.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.Scanner;
 
 import javax.crypto.BadPaddingException;
@@ -15,10 +17,17 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.java.logspringmvc.dao.LogDAO;
+import com.java.logspringmvc.dao.UsageMetricDAO;
+import com.java.logspringmvc.dao.UserDAO;
 import com.java.logspringmvc.model.Log;
+import com.java.logspringmvc.model.UsageMetric;
+import com.java.logspringmvc.model.User;
 
 
 public class Decryptlog {
@@ -28,6 +37,12 @@ public class Decryptlog {
     
 	@Autowired
 	private LogDAO logDAO;
+	
+	@Autowired
+	private UserDAO userDAO;
+	
+	@Autowired
+	private UsageMetricDAO usagemetricDAO;
     
     private String decrypt(String key, String input)
             throws CryptoException {
@@ -106,6 +121,41 @@ public class Decryptlog {
 		}
         
 	}
+	
+	@SuppressWarnings("rawtypes")
+	public void decryptMAClogfile(String filename) throws IOException, ParseException, CryptoException
+	{
+		JSONParser parser=new JSONParser();
+		Object obj=parser.parse(new FileReader(filename));
+		JSONObject json=(JSONObject)obj;
+	
+		String mac=filename.split("\\.")[0].split("_")[1];
+		String app=null;
+		int usage_metric=0;
+		
+		
+		for(Iterator iterator = json.keySet().iterator(); iterator.hasNext();) {
+			
+		    String key = (String) iterator.next();
+		    //System.out.println(decrypt(strkey,key)+" : "+ decrypt(strkey,json.get(key).toString()));
+		    if(decrypt(strkey,key).equals("software-name".toString()))
+		    	app=decrypt(strkey,json.get(key).toString());
+		    if(decrypt(strkey,key).equals("usage".toString()))
+		    	usage_metric=Integer.parseInt(decrypt(strkey,json.get(key).toString()));
+		}
+		
+//		System.out.println("MAC: "+ mac);
+//		System.out.println("APP: "+ app);
+//		System.out.println("Usage metric: "+ usage_metric);
+		int id=userDAO.addUser(mac);
+		UsageMetric um=new UsageMetric();
+		um.setUserid(id);
+		um.setApplication(app);
+		um.setUsage(usage_metric);
+		usagemetricDAO.updateUsage(um);
+		
+	}
+	
 	public void decryptandaddLog(String filename) throws CryptoException, FileNotFoundException 
 	{
 		File infile = new File(filename);
