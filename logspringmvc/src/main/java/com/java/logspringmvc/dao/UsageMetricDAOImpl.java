@@ -31,16 +31,16 @@ public class UsageMetricDAOImpl implements UsageMetricDAO{
 		
 		if(count > 0) 
 		{
-			String query = "SELECT usage_data FROM usage_metric where userid = ? AND application = ?";
-			Integer usage = jdbcTemplate.queryForObject(query, 
-					new Object[] {usageMetric.getUserid(),usageMetric.getApplication()},
-					Integer.class);
+//			String query = "SELECT usage_data FROM usage_metric where userid = ? AND application = ?";
+//			Integer usage = jdbcTemplate.queryForObject(query, 
+//					new Object[] {usageMetric.getUserid(),usageMetric.getApplication()},
+//					Integer.class);
 			
 			
-			usage+=usageMetric.getUsage();
+//			usage+=usageMetric.getUsage();
 			String query1="update usage_metric set usage_data=? where userid = ? AND application = ?";
 			jdbcTemplate.update(query1, 
-					new Object[] {usage, usageMetric.getUserid(), usageMetric.getApplication()},
+					new Object[] {usageMetric.getUsage(), usageMetric.getUserid(), usageMetric.getApplication()},
 					new int[] {Types.INTEGER, Types.INTEGER, Types.VARCHAR}
 			);
 		}

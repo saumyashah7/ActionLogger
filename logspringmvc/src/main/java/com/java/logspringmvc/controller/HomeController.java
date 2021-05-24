@@ -18,6 +18,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.java.logspringmvc.dao.LogDAO;
 import com.java.logspringmvc.dao.UsageMetricDAO;
 import com.java.logspringmvc.model.Log;
@@ -32,6 +38,8 @@ import org.json.simple.parser.ParseException;
 
 @Controller
 public class HomeController {
+	
+	private static String UPLOADED_FOLDER = "E://UTSA//json//";
 
 	@Autowired
 	private LogDAO logDAO;
@@ -50,21 +58,7 @@ public class HomeController {
 	        for (Path path : stream) 
 	            if (!Files.isDirectory(path)) 
 	            {
-	            	dc.decryptMAClogfile(path.toString());  
-	            	
-//	            	try {
-//	            		
-//	            		FileUtils.forceDelete(new File(path.toString()));
-//	            		
-//	            		System.out.println("force delete file in java");
-//	            		
-//	            		} 
-//	            		catch (IOException e) {
-//	            		e.printStackTrace();
-//	            		}
-//	                if (!new File(path.toString()).delete()) 
-//	                	System.out.println("Failed to delete: " + path.toString());
-	            	
+	            	dc.decryptMAClogfile(path.toString());	            	
 	            }
 	    }
 	    catch (Exception e) {
@@ -85,7 +79,7 @@ public class HomeController {
 	
 	@RequestMapping(value= {"/appusage"})
 	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
-		//parseJsonFiles("E:\\UTSA\\json\\input");
+		parseJsonFiles("E:\\UTSA\\json");
 		List<UsageMetric> usagelist = usermetricDAO.getAppUsage();  
 		mod.addAttribute("usagelist", usagelist);
 		return "appusage";
@@ -108,5 +102,22 @@ public class HomeController {
 		
 	}
 	
-	
+    @RequestMapping(value="/upload",method=RequestMethod.POST) // //new annotation since 4.3
+    public void singleFileUpload(@RequestParam("file") MultipartFile file) {
+
+        if (file.isEmpty())
+        	return ;
+        try
+        {
+            // Get the file and save it somewhere
+            byte[] bytes = file.getBytes();
+            Path path = Paths.get(UPLOADED_FOLDER+file.getOriginalFilename());
+            Files.write(path, bytes);
+
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+    }	
 }
