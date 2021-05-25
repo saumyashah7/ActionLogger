@@ -49,72 +49,6 @@ public class ActionLogger
     //private static final String strkey = "1239567890123456";
     private final static String strkey = "1122334455667788";
     private final static String POST_URL = "http://localhost:8080/logspringmvc/upload";
-    
-    @SuppressWarnings("unchecked")
-	public static void log(String msg) throws IOException, ParseException, CryptoException 
-    {
-    	
-		String app =  msg.split(",")[0];
-		String function =  msg.split(",")[1];
-		String encrypted_app = encrypt(strkey, "usage");
-		String encrypted_function = encrypt(strkey, function);
-		String mac=getMAC();
-		File yourFile = new File("actions_"+mac+".json");
-		FileWriter writer=null;
-
-		if(!yourFile.exists()) 
-		{
-		    yourFile.createNewFile(); //creating it
-		    
-		    JSONObject js=new JSONObject();
-		    js.put(encrypt(strkey,"software-name"), encrypt(strkey,app));
-		    js.put(encrypted_app, encrypt(strkey,"1"));
-		    js.put(encrypted_function, encrypt(strkey,"1"));
-		    js.put(encrypt(strkey,"EAGERlastsentdatetime"), encrypt(strkey,new Timestamp(System.currentTimeMillis()).toString()));
-		    
-		    writer=new FileWriter("actions_"+mac+".json");
-		    writer.write(js.toJSONString());
-		    writer.close();
-		    return;
-		}
-
-		
-		JSONParser parser=new JSONParser();
-		Object obj=parser.parse(new FileReader("actions_"+mac+".json"));
-		JSONObject json=(JSONObject)obj;
-		
-		if(json.containsKey(encrypted_app)) 
-		{
-			int cnt=Integer.parseInt(decrypt(strkey, json.get(encrypted_app).toString()));
-			++cnt;
-			json.put(encrypted_app, encrypt(strkey,String.valueOf(cnt)));
-			writer=new FileWriter("actions_"+mac+".json");
-			writer.write(json.toJSONString());
-			writer.close();
-		}
-		
-		
-		if(json.containsKey(encrypted_function)) 
-		{
-			int cnt=Integer.parseInt(decrypt(strkey,json.get(encrypted_function).toString()));
-			++cnt;
-			json.put(encrypted_function, encrypt(strkey,String.valueOf(cnt)));
-		}
-		else
-		{
-			json.put(encrypted_function, encrypt(strkey,"1"));
-		}
-		
-		if(checkTimestamp(decrypt(strkey, json.get(encrypt(strkey,"EAGERlastsentdatetime")).toString()))) {
-			System.out.println("Updating timestamp");
-			json.put(encrypt(strkey,"EAGERlastsentdatetime"),encrypt(strkey,new Timestamp(System.currentTimeMillis()).toString()));
-		}
-		
-		writer=new FileWriter("actions_"+mac+".json");
-		writer.write(json.toJSONString());
-		writer.close();
-		
-    }
 	
 //	public static byte[] getBytesstr(String bytestring) 
 //	{
@@ -220,7 +154,7 @@ public class ActionLogger
 
     	HttpEntity multipart = builder.build();
     	uploadFile.setEntity(multipart);
-    	//CloseableHttpResponse response = httpClient.execute(uploadFile);
+    	CloseableHttpResponse response = httpClient.execute(uploadFile);
     	//HttpEntity responseEntity = response.getEntity();
     	
 	}
@@ -245,16 +179,133 @@ public class ActionLogger
     	System.out.println("Minutes: "+diffMinutes);
     	System.out.println("Hours: "+diffHours);
     	System.out.println("Days: "+diffDays);
-    	if(diffMinutes>5) {
+    	if(diffMinutes>2) {
     		  sendPOST("actions_"+getMAC()+".json");
     		  return true;
     	}
     	  return false;
  
     }
+    
+    @SuppressWarnings("unchecked")
+	public static void log(String msg) throws IOException, ParseException, CryptoException 
+    {
+    	if(msg.split(",").length==1) 
+    	{
+    		String app =  msg;
+    		String encrypted_app = encrypt(strkey, "usage");
+    		String mac=getMAC();
+    		File jsonFile = new File("actions_"+mac+".json");
+    		FileWriter writer=null;
+
+    		if(!jsonFile.exists()) 
+    		{
+    			jsonFile.createNewFile(); //creating it
+    		    
+    		    JSONObject js=new JSONObject();
+    		    js.put(encrypt(strkey,"software-name"), encrypt(strkey,app));
+    		    js.put(encrypted_app, encrypt(strkey,"1"));
+    		    js.put(encrypt(strkey,"EAGERlastsentdatetime"), encrypt(strkey,new Timestamp(System.currentTimeMillis()).toString()));
+    		    
+    		    writer=new FileWriter("actions_"+mac+".json");
+    		    writer.write(js.toJSONString());
+    		    writer.close();
+    		    return;
+    		}
+
+    		
+    		JSONParser parser=new JSONParser();
+    		Object obj=parser.parse(new FileReader("actions_"+mac+".json"));
+    		JSONObject json=(JSONObject)obj;
+    		
+    		if(json.containsKey(encrypted_app)) 
+    		{
+    			int cnt=Integer.parseInt(decrypt(strkey, json.get(encrypted_app).toString()));
+    			++cnt;
+    			json.put(encrypted_app, encrypt(strkey,String.valueOf(cnt)));
+    			writer=new FileWriter("actions_"+mac+".json");
+    			writer.write(json.toJSONString());
+    			writer.close();
+    		}
+    		
+    		if(checkTimestamp(decrypt(strkey, json.get(encrypt(strkey,"EAGERlastsentdatetime")).toString()))) {
+    			System.out.println("Updating timestamp");
+    			json.put(encrypt(strkey,"EAGERlastsentdatetime"),encrypt(strkey,new Timestamp(System.currentTimeMillis()).toString()));
+    		}
+    		
+    		writer=new FileWriter("actions_"+mac+".json");
+    		writer.write(json.toJSONString());
+    		writer.close();
+    	}
+    	else 
+    	{
+			String app =  msg.split(",")[0];
+			String function =  msg.split(",")[1];
+			String encrypted_app = encrypt(strkey, "usage");
+			String encrypted_function = encrypt(strkey, function);
+			String mac=getMAC();
+			File jsonFile = new File("actions_"+mac+".json");
+			FileWriter writer=null;
+	
+			if(!jsonFile.exists()) 
+			{
+				jsonFile.createNewFile(); //creating it
+			    
+			    JSONObject js=new JSONObject();
+			    js.put(encrypt(strkey,"software-name"), encrypt(strkey,app));
+			    js.put(encrypted_app, encrypt(strkey,"1"));
+			    js.put(encrypted_function, encrypt(strkey,"1"));
+			    js.put(encrypt(strkey,"EAGERlastsentdatetime"), encrypt(strkey,new Timestamp(System.currentTimeMillis()).toString()));
+			    
+			    writer=new FileWriter("actions_"+mac+".json");
+			    writer.write(js.toJSONString());
+			    writer.close();
+			    return;
+			}
+	
+			JSONParser parser=new JSONParser();
+			Object obj=parser.parse(new FileReader("actions_"+mac+".json"));
+			JSONObject json=(JSONObject)obj;
+			
+			if(json.containsKey(encrypted_app)) 
+			{
+				int cnt=Integer.parseInt(decrypt(strkey, json.get(encrypted_app).toString()));
+				++cnt;
+				json.put(encrypted_app, encrypt(strkey,String.valueOf(cnt)));
+				writer=new FileWriter("actions_"+mac+".json");
+				writer.write(json.toJSONString());
+				writer.close();
+			}		
+			
+			if(json.containsKey(encrypted_function)) 
+			{
+				int cnt=Integer.parseInt(decrypt(strkey,json.get(encrypted_function).toString()));
+				++cnt;
+				json.put(encrypted_function, encrypt(strkey,String.valueOf(cnt)));
+			}
+			else
+			{
+				json.put(encrypted_function, encrypt(strkey,"1"));
+			}
+			
+			if(checkTimestamp(decrypt(strkey, json.get(encrypt(strkey,"EAGERlastsentdatetime")).toString()))) {
+				System.out.println("Updating timestamp");
+				json.put(encrypt(strkey,"EAGERlastsentdatetime"),encrypt(strkey,new Timestamp(System.currentTimeMillis()).toString()));
+			}
+			
+			writer=new FileWriter("actions_"+mac+".json");
+			writer.write(json.toJSONString());
+			writer.close();
+    	}
+		
+    }
 
 	public static void main(String[] args) throws CryptoException, NoSuchAlgorithmException, ParseException, IOException {
-		log("ReActionlogger,main method ");
+//		log("ReActionlogger,main method");
+		log("ReActionlogger");
+		log("ReActionlogger");
+		log("ReActionlogger");
+		log("ReActionlogger");
 //		log("ReActionlogger,main method ");
 //		log("ReActionlogger,login method ");
 //		log("ReActionlogger,login method ");

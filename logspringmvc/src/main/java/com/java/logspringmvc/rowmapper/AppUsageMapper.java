@@ -11,6 +11,7 @@ public class AppUsageMapper implements RowMapper<UsageMetric> {
 	   public UsageMetric mapRow(ResultSet rs, int rowNum) throws SQLException {
 		   UsageMetric um = new UsageMetric();
 		   um.setApplication(rs.getString("application"));
+		   um.setMetric(rs.getString("metric"));
 		   um.setUsage(rs.getInt("usagedata"));
 		   return um;
 		   }

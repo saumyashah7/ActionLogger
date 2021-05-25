@@ -14,11 +14,13 @@
             <table border="1">
             <tr>
                 <th>Application</th>
+                <th>Metric</th>
                 <th>Usage</th>
             </tr>  
                 <c:forEach var="app" items="${usagelist}" >
                 <tr>
                     <td>${app.application}</td>
+                    <td>${app.metric}</td>
                     <td>${app.usage}</td>
                 </tr>
                 </c:forEach>             

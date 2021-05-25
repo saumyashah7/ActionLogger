@@ -4,6 +4,7 @@ public class UsageMetric {
 	
 	int userid;
 	String application;
+	String metric;
 	int usage;
 	
 	public int getUserid() {
@@ -18,6 +19,12 @@ public class UsageMetric {
 	public void setApplication(String application) {
 		this.application = application;
 	}
+	public String getMetric() {
+		return metric;
+	}
+	public void setMetric(String metric) {
+		this.metric = metric;
+	}	
 	public int getUsage() {
 		return usage;
 	}

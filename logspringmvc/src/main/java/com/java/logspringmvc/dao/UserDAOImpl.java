@@ -4,8 +4,6 @@ import javax.sql.DataSource;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.java.logspringmvc.model.User;
-
 public class UserDAOImpl implements UserDAO{
 
 	

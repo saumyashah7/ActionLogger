@@ -7,7 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.crypto.BadPaddingException;
@@ -130,29 +133,35 @@ public class Decryptlog {
 		JSONObject json=(JSONObject)obj;
 	
 		String mac=filename.split("\\.")[0].split("_")[1];
+		int id=userDAO.addUser(mac);
+		
+		
 		String app=null;
-		int usage_metric=0;
+		HashMap<String,Integer> metrics=new HashMap<>();
 		
-		
-		for(Iterator iterator = json.keySet().iterator(); iterator.hasNext();) {
-			
+		for(Iterator iterator = json.keySet().iterator(); iterator.hasNext();) 
+		{
 		    String key = (String) iterator.next();
-		    //System.out.println(decrypt(strkey,key)+" : "+ decrypt(strkey,json.get(key).toString()));
-		    if(decrypt(strkey,key).equals("software-name".toString()))
+		    if(decrypt(strkey,key).equals("software-name".toString())) 
+		    {
 		    	app=decrypt(strkey,json.get(key).toString());
-		    if(decrypt(strkey,key).equals("usage".toString()))
-		    	usage_metric=Integer.parseInt(decrypt(strkey,json.get(key).toString()));
+		    	continue;
+		    }
+		    if(decrypt(strkey,key).equals("EAGERlastsentdatetime".toString())) 
+		    	continue;
+		    metrics.put(decrypt(strkey,key.toString()), Integer.parseInt(decrypt(strkey,json.get(key).toString())));
 		}
 		
-//		System.out.println("MAC: "+ mac);
-//		System.out.println("APP: "+ app);
-//		System.out.println("Usage metric: "+ usage_metric);
-		int id=userDAO.addUser(mac);
-		UsageMetric um=new UsageMetric();
-		um.setUserid(id);
-		um.setApplication(app);
-		um.setUsage(usage_metric);
-		usagemetricDAO.updateUsage(um);
+		UsageMetric um;
+		for(String key:metrics.keySet()) 
+		{
+			um=new UsageMetric();
+			um.setUserid(id);
+			um.setApplication(app);
+			um.setMetric(key);
+			um.setUsage(metrics.get(key));
+			usagemetricDAO.updateUsage(um);
+		}
 		
 	}
 	

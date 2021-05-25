@@ -52,7 +52,6 @@ public class HomeController {
 	
 	public void parseJsonFiles(String dir) throws IOException, ParseException, CryptoException
 	{
-		
 	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) 
 	    {
 	        for (Path path : stream) 
@@ -105,15 +104,13 @@ public class HomeController {
     @RequestMapping(value="/upload",method=RequestMethod.POST) // //new annotation since 4.3
     public void singleFileUpload(@RequestParam("file") MultipartFile file) {
 
-        if (file.isEmpty())
-        	return ;
+        if (file.isEmpty()) return ;
         try
         {
             // Get the file and save it somewhere
             byte[] bytes = file.getBytes();
             Path path = Paths.get(UPLOADED_FOLDER+file.getOriginalFilename());
             Files.write(path, bytes);
-
         }
         catch (IOException e) 
         {

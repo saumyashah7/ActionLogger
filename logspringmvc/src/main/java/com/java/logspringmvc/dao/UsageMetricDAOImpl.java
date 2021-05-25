@@ -23,38 +23,31 @@ public class UsageMetricDAOImpl implements UsageMetricDAO{
 	@Override
 	public void updateUsage(UsageMetric usageMetric) {
 		// TODO Auto-generated method stub
-		String sql = "SELECT count(*) FROM usage_metric where userid = ? AND application = ?";
+		String sql = "SELECT count(*) FROM usage_metric where userid = ? AND application = ? AND metric = ?";
 		Integer count =jdbcTemplate.queryForObject(sql, 
-				new Object[] {usageMetric.getUserid(),usageMetric.getApplication()},
+				new Object[] {usageMetric.getUserid(),usageMetric.getApplication(),usageMetric.getMetric()},
 				Integer.class);
 		
 		
 		if(count > 0) 
 		{
-//			String query = "SELECT usage_data FROM usage_metric where userid = ? AND application = ?";
-//			Integer usage = jdbcTemplate.queryForObject(query, 
-//					new Object[] {usageMetric.getUserid(),usageMetric.getApplication()},
-//					Integer.class);
-			
-			
-//			usage+=usageMetric.getUsage();
-			String query1="update usage_metric set usage_data=? where userid = ? AND application = ?";
+			String query1="update usage_metric set usage_data=? where userid = ? AND application = ? AND metric = ?";
 			jdbcTemplate.update(query1, 
-					new Object[] {usageMetric.getUsage(), usageMetric.getUserid(), usageMetric.getApplication()},
-					new int[] {Types.INTEGER, Types.INTEGER, Types.VARCHAR}
+					new Object[] {usageMetric.getUsage(), usageMetric.getUserid(), usageMetric.getApplication(), usageMetric.getMetric()},
+					new int[] {Types.INTEGER, Types.INTEGER, Types.VARCHAR, Types.VARCHAR}
 			);
 		}
 		else
 		{
-			String query="insert into usage_metric values(?,?,?)";
-			jdbcTemplate.update(query, usageMetric.getUserid(), usageMetric.getApplication(), usageMetric.getUsage());
+			String query="insert into usage_metric values(?,?,?,?)";
+			jdbcTemplate.update(query, usageMetric.getUserid(), usageMetric.getApplication(), usageMetric.getMetric(),usageMetric.getUsage());
 			
 		}	
 	}
 
 	@Override
 	public List<UsageMetric> getAppUsage(){
-		String sql = "select application,sum(usage_data) as usagedata from usage_metric group by application";
+		String sql = "select application,metric,sum(usage_data) as usagedata from usage_metric group by application,metric";
 		List<UsageMetric> appusage = jdbcTemplate.query(sql, new AppUsageMapper());
 		return appusage;
 	}
