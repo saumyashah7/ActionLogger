@@ -17,6 +17,8 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import com.java.logspringmvc.dao.LogDAO;
 import com.java.logspringmvc.dao.LogDAOImpl;
+import com.java.logspringmvc.dao.TokenDAO;
+import com.java.logspringmvc.dao.TokenDAOImpl;
 import com.java.logspringmvc.dao.UsageMetricDAO;
 import com.java.logspringmvc.dao.UsageMetricDAOImpl;
 import com.java.logspringmvc.dao.UserDAO;
@@ -71,6 +73,12 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     public Decryptlog getDecryptLog() 
     {
     	return new Decryptlog();
+    }
+    
+    @Bean
+    public TokenDAO getTokenDAO() 
+    {
+    	return new TokenDAOImpl(getDataSource());
     }
 //    
 //    @Bean(name = "multipartResolver")

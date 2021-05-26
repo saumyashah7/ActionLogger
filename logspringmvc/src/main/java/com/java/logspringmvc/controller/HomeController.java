@@ -11,7 +11,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +29,11 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.java.logspringmvc.dao.LogDAO;
+import com.java.logspringmvc.dao.TokenDAO;
 import com.java.logspringmvc.dao.UsageMetricDAO;
+import com.java.logspringmvc.dao.UserDAO;
 import com.java.logspringmvc.model.Log;
+import com.java.logspringmvc.model.Token;
 import com.java.logspringmvc.model.UsageMetric;
 import com.java.logspringmvc.util.CryptoException;
 import com.java.logspringmvc.util.Decryptlog;
@@ -45,7 +52,13 @@ public class HomeController {
 	private LogDAO logDAO;
 	
 	@Autowired
-	UsageMetricDAO usermetricDAO;
+	private UserDAO userDAO;
+	
+	@Autowired
+	private UsageMetricDAO usagemetricDAO;
+	
+	@Autowired
+	private TokenDAO tokenDAO;
 	
 	@Autowired
 	private Decryptlog dc;
@@ -79,7 +92,7 @@ public class HomeController {
 	@RequestMapping(value= {"/appusage"})
 	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
 		parseJsonFiles("E:\\UTSA\\json");
-		List<UsageMetric> usagelist = usermetricDAO.getAppUsage();  
+		List<UsageMetric> usagelist = usagemetricDAO.getAppUsage();  
 		mod.addAttribute("usagelist", usagelist);
 		return "appusage";
 	}	
@@ -90,16 +103,90 @@ public class HomeController {
 		return "redirect:/home";
 	}
 	
-	@RequestMapping(value="/addlog", method=RequestMethod.POST)
-	public void addLogpost(@RequestBody String payload) throws JSONException {
-	//public void addLogpost(@RequestParam("datetime") String datetime, @RequestParam("application") String application, @RequestParam("method") String method, @RequestParam("description") String description){		
-		//logDAO.addlog(new Log(datetime,application,method,description));
+//	@RequestMapping(value="/addlog", method=RequestMethod.POST)
+//	public void addLogpost(@RequestBody String payload) throws JSONException {
+//	//public void addLogpost(@RequestParam("datetime") String datetime, @RequestParam("application") String application, @RequestParam("method") String method, @RequestParam("description") String description){		
+//		//logDAO.addlog(new Log(datetime,application,method,description));
+//		
+//		//from weburl post request with JSON payload
+//		//final JSONObject obj = new JSONObject(payload);
+//		//logDAO.addlog(new Log(obj.getString("datetime"),obj.getString("application"),obj.getString("method"),obj.getString("description")));
+//		
+//	}
+	
+	@RequestMapping(value= {"/log/{application}/{metric}"})
+	public ResponseEntity addLogget(@PathVariable(name="application") String application, @PathVariable(name="metric") String metric,HttpServletRequest request) throws JSONException {		
 		
-		//from weburl post request with JSON payload
-		//final JSONObject obj = new JSONObject(payload);
-		//logDAO.addlog(new Log(obj.getString("datetime"),obj.getString("application"),obj.getString("method"),obj.getString("description")));
+		String ipAddress =  request.getRemoteAddr();
+		UsageMetric um=new UsageMetric();
+		int id=userDAO.addUser(ipAddress);
+		um.setUserid(id);
+		um.setApplication(application);
+		
+		um.setMetric(metric);
+		usagemetricDAO.incrementUsage(um);
+		return new ResponseEntity(HttpStatus.OK);
+		
 		
 	}
+	@RequestMapping(value= {"/log/{application}"})
+	public ResponseEntity addLoggetapponly(@PathVariable(name="application") String application,HttpServletRequest request) throws JSONException {		
+		
+		String ipAddress =  request.getRemoteAddr();
+		UsageMetric um=new UsageMetric();
+		int id=userDAO.addUser(ipAddress);
+		um.setUserid(id);
+		um.setApplication(application);
+		um.setMetric("usage");
+		usagemetricDAO.incrementUsage(um);
+		return new ResponseEntity(HttpStatus.OK);
+		
+		
+	}
+	
+	@RequestMapping(value="/log", method=RequestMethod.POST)
+	public ResponseEntity addLogpost(@RequestBody String payload,HttpServletRequest request) throws JSONException {		
+		
+		String ipAddress =  request.getRemoteAddr();
+		int id=userDAO.addUser(ipAddress);
+		//from weburl post request with JSON payload
+		final JSONObject obj = new JSONObject(payload);
+		
+		UsageMetric um=new UsageMetric();
+		um.setUserid(id);
+		um.setApplication(obj.getString("application"));
+		if(obj.has("metric"))
+			um.setMetric(obj.getString("metric"));
+		else
+			um.setMetric("usage");
+		usagemetricDAO.incrementUsage(um);
+		return new ResponseEntity(HttpStatus.OK);
+		
+		
+	}
+
+	@RequestMapping(value="/getToken", method=RequestMethod.GET)
+	@ResponseBody
+	public String getToken(HttpServletRequest request){		
+		String ipAddress =  request.getRemoteAddr();
+		int id=userDAO.addUser(ipAddress);
+		String token=tokenDAO.assignToken(id);
+		return token;
+	}
+	
+	@RequestMapping(value="/verifyToken/{token}", method=RequestMethod.GET)
+	@ResponseBody
+	public String verifyToken(@PathVariable(name="token") String tok, HttpServletRequest request){		
+		String ipAddress =  request.getRemoteAddr();
+		int id=userDAO.addUser(ipAddress);
+		Token token=new Token();
+		token.setUserid(id);
+		token.setValue(tok);
+		if(tokenDAO.verifyToken(token))
+			return "true";
+		return "false";
+	}
+
 	
     @RequestMapping(value="/upload",method=RequestMethod.POST) // //new annotation since 4.3
     public void singleFileUpload(@RequestParam("file") MultipartFile file) {
