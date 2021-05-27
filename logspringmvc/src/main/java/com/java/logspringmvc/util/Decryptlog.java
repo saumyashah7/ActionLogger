@@ -133,7 +133,7 @@ public class Decryptlog {
 		JSONObject json=(JSONObject)obj;
 	
 		String mac=filename.split("\\.")[0].split("_")[1];
-		int id=userDAO.addUser(mac);
+		int id=userDAO.addorgetUser(mac);
 		
 		
 		String app=null;

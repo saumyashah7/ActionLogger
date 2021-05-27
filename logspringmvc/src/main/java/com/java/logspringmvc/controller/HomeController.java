@@ -1,16 +1,11 @@
 package com.java.logspringmvc.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.commons.CommonsMultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import com.java.logspringmvc.dao.LogDAO;
 import com.java.logspringmvc.dao.TokenDAO;
 import com.java.logspringmvc.dao.UsageMetricDAO;
@@ -38,7 +30,6 @@ import com.java.logspringmvc.model.UsageMetric;
 import com.java.logspringmvc.util.CryptoException;
 import com.java.logspringmvc.util.Decryptlog;
 
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -89,14 +80,6 @@ public class HomeController {
 		return "home";
 	}
 	
-	@RequestMapping(value= {"/appusage"})
-	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
-		parseJsonFiles("E:\\UTSA\\json");
-		List<UsageMetric> usagelist = usagemetricDAO.getAppUsage();  
-		mod.addAttribute("usagelist", usagelist);
-		return "appusage";
-	}	
-	
 	@RequestMapping(value="/addlog/{datetime}/{application}/{method}/{description}")
 	public String addLog(@PathVariable("datetime") String time, @PathVariable("application") String application, @PathVariable("method") String method, @PathVariable("description") String description){
 		logDAO.addlog(new Log(time,application,method,description));
@@ -114,41 +97,59 @@ public class HomeController {
 //		
 //	}
 	
-	@RequestMapping(value= {"/log/{application}/{metric}"})
-	public ResponseEntity addLogget(@PathVariable(name="application") String application, @PathVariable(name="metric") String metric,HttpServletRequest request) throws JSONException {		
-		
-		String ipAddress =  request.getRemoteAddr();
-		UsageMetric um=new UsageMetric();
-		int id=userDAO.addUser(ipAddress);
-		um.setUserid(id);
-		um.setApplication(application);
-		
-		um.setMetric(metric);
-		usagemetricDAO.incrementUsage(um);
-		return new ResponseEntity(HttpStatus.OK);
-		
-		
-	}
-	@RequestMapping(value= {"/log/{application}"})
-	public ResponseEntity addLoggetapponly(@PathVariable(name="application") String application,HttpServletRequest request) throws JSONException {		
-		
-		String ipAddress =  request.getRemoteAddr();
-		UsageMetric um=new UsageMetric();
-		int id=userDAO.addUser(ipAddress);
-		um.setUserid(id);
-		um.setApplication(application);
-		um.setMetric("usage");
-		usagemetricDAO.incrementUsage(um);
-		return new ResponseEntity(HttpStatus.OK);
-		
-		
+	@RequestMapping(value= {"/appusage"})
+	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
+		parseJsonFiles("E:\\UTSA\\json");
+		List<UsageMetric> usagelist = usagemetricDAO.getAppUsage();  
+		mod.addAttribute("usagelist", usagelist);
+		return "appusage";
 	}
 	
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value= {"/log/{token}/{application}/{metric}","/log/{token}/{application}"})
+	public ResponseEntity addLogget(@PathVariable(name="token") String tok,@PathVariable(name="application") String application, @PathVariable(name="metric",required = false) String metric,HttpServletRequest request) throws JSONException {		
+		
+		String ipAddress =  request.getRemoteAddr();
+		int id=userDAO.addorgetUser(ipAddress);
+		Token token=new Token();
+		token.setUserid(id);
+		token.setValue(tok);
+		if(!tokenDAO.verifyToken(token))
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+		
+		UsageMetric um=new UsageMetric();
+		um.setUserid(id);
+		um.setApplication(application);
+		if(metric!=null)
+			um.setMetric(metric);
+		else
+			um.setMetric("usage");			
+		usagemetricDAO.incrementUsage(um);
+		return new ResponseEntity(HttpStatus.OK);	
+	}
+//	@SuppressWarnings("rawtypes")
+//	@RequestMapping(value= {"/log/{application}"})
+//	public ResponseEntity addLoggetapponly(@PathVariable(name="application") String application,HttpServletRequest request) throws JSONException {		
+//		
+//		String ipAddress =  request.getRemoteAddr();
+//		UsageMetric um=new UsageMetric();
+//		int id=userDAO.addorgetUser(ipAddress);
+//		um.setUserid(id);
+//		um.setApplication(application);
+//		um.setMetric("usage");
+//		usagemetricDAO.incrementUsage(um);
+//		return new ResponseEntity(HttpStatus.OK);
+//		
+//		
+//	}
+	
+	//get token first from: http://localhost:8080/logspringmvc/getToken
+	@SuppressWarnings("rawtypes")
 	@RequestMapping(value="/log", method=RequestMethod.POST)
 	public ResponseEntity addLogpost(@RequestBody String payload,HttpServletRequest request) throws JSONException {		
 		
 		String ipAddress =  request.getRemoteAddr();
-		int id=userDAO.addUser(ipAddress);
+		int id=userDAO.addorgetUser(ipAddress);
 		//from weburl post request with JSON payload
 		final JSONObject obj = new JSONObject(payload);
 		
@@ -159,39 +160,62 @@ public class HomeController {
 			um.setMetric(obj.getString("metric"));
 		else
 			um.setMetric("usage");
+		String tok=obj.getString("token");
+		
+		Token token=new Token();
+		token.setUserid(id);
+		token.setValue(tok);
+		System.out.println("token: "+tok);
+		if(!tokenDAO.verifyToken(token))
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+		
 		usagemetricDAO.incrementUsage(um);
 		return new ResponseEntity(HttpStatus.OK);
 		
 		
 	}
 
-	@RequestMapping(value="/getToken", method=RequestMethod.GET)
+	@RequestMapping(value= {"/getToken","/getToken/{macaddress}"}, method=RequestMethod.GET)
 	@ResponseBody
-	public String getToken(HttpServletRequest request){		
-		String ipAddress =  request.getRemoteAddr();
-		int id=userDAO.addUser(ipAddress);
-		String token=tokenDAO.assignToken(id);
+	public String getToken(HttpServletRequest request,@PathVariable(required=false) String macaddress){
+		String token=null;
+		if(macaddress!=null) {
+			int id=userDAO.addorgetUser(macaddress);
+			token=tokenDAO.assignToken(id);
+		}
+		else 
+		{
+			String ipAddress =  request.getRemoteAddr();
+			int id=userDAO.addorgetUser(ipAddress);
+			token=tokenDAO.assignToken(id);
+		}
 		return token;
 	}
-	
-	@RequestMapping(value="/verifyToken/{token}", method=RequestMethod.GET)
-	@ResponseBody
-	public String verifyToken(@PathVariable(name="token") String tok, HttpServletRequest request){		
-		String ipAddress =  request.getRemoteAddr();
-		int id=userDAO.addUser(ipAddress);
+
+    @SuppressWarnings("rawtypes")
+//	@RequestMapping(value= {"/upload/{token}","/upload/{token}/{macaddress}"},method=RequestMethod.POST) 
+    @RequestMapping(value= "/upload/{token}/{macaddress}",method=RequestMethod.POST) 
+    public ResponseEntity singleFileUpload(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
+    	int id=0;
+    	if(macaddress==null) 
+    	{
+    		String ipAddress =  request.getRemoteAddr();
+    		id=userDAO.addorgetUser(ipAddress);
+		}
+    	else 
+    	{
+    		id=userDAO.addorgetUser(macaddress);
+    	}
 		Token token=new Token();
 		token.setUserid(id);
 		token.setValue(tok);
-		if(tokenDAO.verifyToken(token))
-			return "true";
-		return "false";
-	}
+		System.out.println("token: "+tok);
+		if(!tokenDAO.verifyToken(token))
+			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+		
+		System.out.println("Verification successfull");
 
-	
-    @RequestMapping(value="/upload",method=RequestMethod.POST) // //new annotation since 4.3
-    public void singleFileUpload(@RequestParam("file") MultipartFile file) {
-
-        if (file.isEmpty()) return ;
+        if (file.isEmpty()) new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         try
         {
             // Get the file and save it somewhere
@@ -202,6 +226,23 @@ public class HomeController {
         catch (IOException e) 
         {
             e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
-    }	
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+	
+	@RequestMapping(value="/verifyToken/{token}", method=RequestMethod.GET)
+	@ResponseBody
+	public String verifyToken(@PathVariable(name="token") String tok, HttpServletRequest request){		
+		String ipAddress =  request.getRemoteAddr();
+		int id=userDAO.addorgetUser(ipAddress);
+		Token token=new Token();
+		token.setUserid(id);
+		token.setValue(tok);
+		if(tokenDAO.verifyToken(token))
+			return tok;
+		return tokenDAO.assignToken(id);
+	}
+
+	
 }

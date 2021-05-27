@@ -14,7 +14,7 @@ public class UserDAOImpl implements UserDAO{
 	    }
 	
 	@Override
-	public int addUser(String macadd) {
+	public int addorgetUser(String macadd) {
 		// TODO Auto-generated method stub
 		
 		Integer count = this.jdbcTemplate.queryForObject("select count(*) from user where macaddress = ?", Integer.class, macadd);

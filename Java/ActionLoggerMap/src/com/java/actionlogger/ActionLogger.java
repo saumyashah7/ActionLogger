@@ -30,11 +30,13 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -48,7 +50,8 @@ public class ActionLogger
     private final static String TRANSFORMATION = "AES";
     //private static final String strkey = "1239567890123456";
     private final static String strkey = "1122334455667788";
-    private final static String POST_URL = "http://localhost:8080/logspringmvc/upload";
+    private final static String UPLOAD_URL = "http://localhost:8080/logspringmvc/upload";
+    private final static String TOKEN_URL = "http://localhost:8080/logspringmvc/getToken";
 	
 //	public static byte[] getBytesstr(String bytestring) 
 //	{
@@ -138,19 +141,17 @@ public class ActionLogger
     }
     
 	private static void sendPOST(String filename) throws IOException {
+
+		String token=sendTokenGET();
+		
     	CloseableHttpClient httpClient = HttpClients.createDefault();
-    	HttpPost uploadFile = new HttpPost(POST_URL);
+    	HttpPost uploadFile = new HttpPost(UPLOAD_URL+"/"+token+"/"+getMAC());
     	MultipartEntityBuilder builder = MultipartEntityBuilder.create();
     	
 
     	// This attaches the file to the POST:
     	File f = new File(filename);
-    	builder.addBinaryBody(
-    	    "file",
-    	    new FileInputStream(f),
-    	    ContentType.APPLICATION_OCTET_STREAM,
-    	    f.getName()
-    	);
+    	builder.addBinaryBody("file", new FileInputStream(f), ContentType.APPLICATION_OCTET_STREAM, f.getName());
 
     	HttpEntity multipart = builder.build();
     	uploadFile.setEntity(multipart);
@@ -158,13 +159,20 @@ public class ActionLogger
     	//HttpEntity responseEntity = response.getEntity();
     	
 	}
+	
+	private static String sendTokenGET() throws IOException {
+    	CloseableHttpClient httpClient = HttpClients.createDefault();
+    	HttpGet getToken = new HttpGet(TOKEN_URL+"/"+getMAC());
+    	CloseableHttpResponse response = httpClient.execute(getToken);
+    	return EntityUtils.toString(response.getEntity());
+	}
     
     public static boolean checkTimestamp(String timeStamp) throws UnknownHostException, SocketException, IOException {
     	
     	Timestamp curtime= new Timestamp(System.currentTimeMillis());
-    	System.out.println(curtime);
+    	//System.out.println(curtime);
     	Timestamp pasttime=Timestamp.valueOf(timeStamp);
-    	System.out.println(pasttime);
+    	//System.out.println(pasttime);
     	
     	long milliseconds1 = pasttime.getTime();
     	long milliseconds2 = curtime.getTime();
@@ -175,10 +183,10 @@ public class ActionLogger
     	long diffHours = diff / (60 * 60 * 1000);
     	long diffDays = diff / (24 * 60 * 60 * 1000);
 
-    	System.out.println("Seconds: "+diffSeconds);
-    	System.out.println("Minutes: "+diffMinutes);
-    	System.out.println("Hours: "+diffHours);
-    	System.out.println("Days: "+diffDays);
+//    	System.out.println("Seconds: "+diffSeconds);
+//    	System.out.println("Minutes: "+diffMinutes);
+//    	System.out.println("Hours: "+diffHours);
+//    	System.out.println("Days: "+diffDays);
     	if(diffMinutes>2) {
     		  sendPOST("actions_"+getMAC()+".json");
     		  return true;
@@ -313,7 +321,8 @@ public class ActionLogger
 //		log("ReActionlogger,messageboards method ");
 //		log("ReActionlogger,messageboards method ");
 //		log("ReActionlogger,messageboards method ");
-		decryptLog("actions_"+getMAC()+".json");	
+		decryptLog("actions_"+getMAC()+".json");
+		//System.out.println(sendTokenGET());
 
 	}
 }

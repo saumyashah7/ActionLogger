@@ -4,6 +4,6 @@ import com.java.logspringmvc.model.User;
 
 public interface UserDAO {
 	
-	public int addUser(String macadd);
+	public int addorgetUser(String macadd);
 
 }
