@@ -230,6 +230,43 @@ public class HomeController {
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
+    
+    @RequestMapping(value= "/upload/cpp/{token}/{macaddress}",method=RequestMethod.POST) 
+    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
+    	int id=0;
+    	if(macaddress==null) 
+    	{
+    		String ipAddress =  request.getRemoteAddr();
+    		id=userDAO.addorgetUser(ipAddress);
+		}
+    	else 
+    	{
+    		id=userDAO.addorgetUser(macaddress);
+    	}
+//		Token token=new Token();
+//		token.setUserid(id);
+//		token.setValue(tok);
+//		System.out.println("token: "+tok);
+//		if(!tokenDAO.verifyToken(token))
+//			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+//		
+//		System.out.println("Verification successfull");
+
+        if (file.isEmpty()) new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        try
+        {
+            // Get the file and save it somewhere
+            byte[] bytes = file.getBytes();
+            Path path = Paths.get(UPLOADED_FOLDER+file.getOriginalFilename());
+            Files.write(path, bytes);
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 	
 	@RequestMapping(value="/verifyToken/{token}", method=RequestMethod.GET)
 	@ResponseBody
