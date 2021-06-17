@@ -24,7 +24,7 @@
 		</init-param>
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>com.java.logspringmvc</param-value>
+			<param-value>com.java.logspringmvc.config</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
