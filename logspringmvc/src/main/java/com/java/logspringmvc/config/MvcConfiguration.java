@@ -2,9 +2,11 @@ package com.java.logspringmvc.config;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
@@ -27,8 +29,21 @@ import com.java.logspringmvc.util.Decryptlog;
 
 @Configuration
 @ComponentScan(basePackages="com.java.logspringmvc")
+@PropertySource("classpath:application.properties")
 @EnableWebMvc
 public class MvcConfiguration extends WebMvcConfigurerAdapter {
+
+	@Value("${jdbc.driverClassName}")
+	String driver;
+
+	@Value("${jdbc.url}")
+	String url;
+
+	@Value("${jdbc.username}")
+	String uname;
+
+	@Value("${jdbc.password}")
+	String pass;
 
 	@Bean
 	public ViewResolver getViewResolver(){
@@ -45,11 +60,12 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
 	
 	@Bean
     public DataSource getDataSource() {
+
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://129.114.16.219:6603/eager");
-        dataSource.setUsername("root");
-        dataSource.setPassword("password");
+        dataSource.setDriverClassName(driver);
+        dataSource.setUrl(url);
+        dataSource.setUsername(uname);
+        dataSource.setPassword(pass);
          
         return dataSource;
     }

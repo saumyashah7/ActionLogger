@@ -1,0 +1,6 @@
+FROM  tomcat:8.5.42
+
+RUN apt-get update && apt-get install openssh-client libcrypto++-dev libcrypto++-doc libcrypto++-utils g++ libcurl4-openssl-dev  libcurlpp-dev -y &&\ 
+    rm -rf /usr/local/tomcat/webapps/ROOT &&\
+    mkdir -p /home/json/java &&\
+    mkdir -p /home/json/cpp

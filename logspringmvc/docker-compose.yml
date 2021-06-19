@@ -4,22 +4,28 @@ services:
     build:
       context: ./src
     container_name: tomcat_eager
-    volumes:
-      - term:/home/term
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - URL_BASE
+      - MYSQL_CONN_URL 
+  
     links:
       - mysql_eager:mysql_eager
     ports: 
-      - "8080:8080"
+      - "9090:8080"
       - "443:8443"
       - "8443:8080"
     volumes:
       # Names within curly brackets '{}' are path variables and should be substituted by those that the user assigns
-      - ./target/logspringmvc-0.0.1.war:/usr/local/tomcat/webapps/ROOT.war
+      - ./target/logspringmvc.war:/usr/local/tomcat/webapps/ROOT.war
       - myvol:/home/term
       - ./.ssh/id_rsa:/usr/local/tomcat/.ssh/PrivateKey.ppk
       - eager:/home/eager/users
-      - ./keystore:/usr/local/tomcat/keystore
-      - ./server.xml:/usr/local/tomcat/conf/server.xml
+        #- ./keystore:/usr/local/tomcat/keystore
+        #- ./server.xml:/usr/local/tomcat/conf/server.xml
 
 
 

@@ -37,7 +37,9 @@ import org.json.simple.parser.ParseException;
 @Controller
 public class HomeController {
 	
-	private static String UPLOADED_FOLDER = "E://UTSA//json//";
+	private static String UPLOAD_FOLDER_JAVA = "/home/json/java";	
+	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp";
+
 
 	@Autowired
 	private LogDAO logDAO;
@@ -73,13 +75,19 @@ public class HomeController {
 	
 	@RequestMapping(value= {"/","/home"})
 	public String listLogs(Model mod) throws IOException, ParseException, CryptoException {
-		//dc.decryptandaddLog("E:\\Spring\\logspringmvc\\action_logs.txt");
-		//dc.decryptMAClogfile("E:\\UTSA\\json\\actions_00-15-5D-33-C1-5A.json");		
 		List<Log> listlogs=logDAO.getLogs(); 
 		mod.addAttribute("listLogs", listlogs);
 		return "home";
 	}
-	
+
+	@RequestMapping(value= {"/appusage"})
+	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
+		parseJsonFiles(UPLOAD_FOLDER_JAVA);
+		List<UsageMetric> usagelist = usagemetricDAO.getAppUsage();  
+		mod.addAttribute("usagelist", usagelist);
+		return "appusage";
+	}
+
 	@RequestMapping(value="/addlog/{datetime}/{application}/{method}/{description}")
 	public String addLog(@PathVariable("datetime") String time, @PathVariable("application") String application, @PathVariable("method") String method, @PathVariable("description") String description){
 		logDAO.addlog(new Log(time,application,method,description));
@@ -97,13 +105,6 @@ public class HomeController {
 //		
 //	}
 	
-	@RequestMapping(value= {"/appusage"})
-	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
-		parseJsonFiles("E:\\UTSA\\json");
-		List<UsageMetric> usagelist = usagemetricDAO.getAppUsage();  
-		mod.addAttribute("usagelist", usagelist);
-		return "appusage";
-	}
 	
 	@SuppressWarnings("rawtypes")
 	@RequestMapping(value= {"/log/{token}/{application}/{metric}","/log/{token}/{application}"})
@@ -193,8 +194,8 @@ public class HomeController {
 	}
 
     @SuppressWarnings("rawtypes")
-//	@RequestMapping(value= {"/upload/{token}","/upload/{token}/{macaddress}"},method=RequestMethod.POST) 
-    @RequestMapping(value= "/upload/{token}/{macaddress}",method=RequestMethod.POST) 
+//	@RequestMapping(value= {"/upload/java/{token}","/upload/java/{token}/{macaddress}"},method=RequestMethod.POST) 
+    @RequestMapping(value= "/upload/java/{token}/{macaddress}",method=RequestMethod.POST) 
     public ResponseEntity singleFileUpload(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
     	int id=0;
     	if(macaddress==null) 
@@ -220,7 +221,7 @@ public class HomeController {
         {
             // Get the file and save it somewhere
             byte[] bytes = file.getBytes();
-            Path path = Paths.get(UPLOADED_FOLDER+file.getOriginalFilename());
+            Path path = Paths.get(UPLOAD_FOLDER_JAVA+file.getOriginalFilename());
             Files.write(path, bytes);
         }
         catch (IOException e) 
@@ -231,7 +232,7 @@ public class HomeController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @RequestMapping(value= "/upload/cpp/{token}/{macaddress}",method=RequestMethod.POST) 
+    @RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
     public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
     	int id=0;
     	if(macaddress==null) 
@@ -257,8 +258,11 @@ public class HomeController {
         {
             // Get the file and save it somewhere
             byte[] bytes = file.getBytes();
-            Path path = Paths.get(UPLOADED_FOLDER+file.getOriginalFilename());
+            Path path = Paths.get(UPLOAD_FOLDER_CPP+file.getOriginalFilename());
             Files.write(path, bytes);
+	    System.out.println("file: "+file.getOriginalFilename());
+	    System.out.println("token: "+tok);
+	    System.out.println("id: "+id);
         }
         catch (IOException e) 
         {
