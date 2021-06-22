@@ -38,7 +38,7 @@ import org.json.simple.parser.ParseException;
 public class HomeController {
 	
 	private static String UPLOAD_FOLDER_JAVA = "/home/json/java";	
-	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp";
+	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp/";
 
 
 	@Autowired
@@ -75,6 +75,8 @@ public class HomeController {
 	
 	@RequestMapping(value= {"/","/home"})
 	public String listLogs(Model mod) throws IOException, ParseException, CryptoException {
+		String command = "mkdir -p /home/decryptedfiles";
+		Process process = Runtime.getRuntime().exec(command);
 		List<Log> listlogs=logDAO.getLogs(); 
 		mod.addAttribute("listLogs", listlogs);
 		return "home";
@@ -232,18 +234,21 @@ public class HomeController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
-    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
+//    @RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
+//    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
+    @RequestMapping(value= {"/upload/cpp/{token}"},method=RequestMethod.POST) 
+    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,HttpServletRequest request) {
+    
     	int id=0;
-    	if(macaddress==null) 
-    	{
+//    	if(macaddress==null) 
+//    	{
     		String ipAddress =  request.getRemoteAddr();
     		id=userDAO.addorgetUser(ipAddress);
-		}
-    	else 
-    	{
-    		id=userDAO.addorgetUser(macaddress);
-    	}
+//		}
+//    	else 
+//    	{
+//    		id=userDAO.addorgetUser(macaddress);
+//    	}
 //		Token token=new Token();
 //		token.setUserid(id);
 //		token.setValue(tok);
@@ -252,6 +257,7 @@ public class HomeController {
 //			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 //		
 //		System.out.println("Verification successfull");
+		System.out.println("reached cpp upload");
 
         if (file.isEmpty()) new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         try

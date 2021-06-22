@@ -62,6 +62,11 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     public DataSource getDataSource() {
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
+	System.out.println("Driver: "+driver);	
+	System.out.println("url: "+url);	
+	System.out.println("user: "+uname);
+
+
         dataSource.setDriverClassName(driver);
         dataSource.setUrl(url);
         dataSource.setUsername(uname);

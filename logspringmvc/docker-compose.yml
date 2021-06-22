@@ -20,9 +20,9 @@ services:
       - "8443:8080"
     volumes:
       # Names within curly brackets '{}' are path variables and should be substituted by those that the user assigns
-      - ./target/logspringmvc.war:/usr/local/tomcat/webapps/ROOT.war
+      - ./target/logspringmvc.war:/usr/tomcat/webapps/ROOT.war
       - myvol:/home/term
-      - ./.ssh/id_rsa:/usr/local/tomcat/.ssh/PrivateKey.ppk
+        #- ./.ssh/id_rsa:/usr/tomcat/.ssh/PrivateKey.ppk
       - eager:/home/eager/users
         #- ./keystore:/usr/local/tomcat/keystore
         #- ./server.xml:/usr/local/tomcat/conf/server.xml

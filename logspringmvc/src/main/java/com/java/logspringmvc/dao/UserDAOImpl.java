@@ -21,7 +21,7 @@ public class UserDAOImpl implements UserDAO{
 		if(count>0)
 			return jdbcTemplate.queryForObject("select userid from user where macaddress = ?", Integer.class, macadd);
 		
-		String query="INSERT INTO USER(MACADDRESS) VALUES(?)";
+		String query="insert into user(macaddress) values(?)";
 		jdbcTemplate.update(query, macadd);
 		
 		Integer id = this.jdbcTemplate.queryForObject("select userid from user where macaddress = ?", Integer.class, macadd);
