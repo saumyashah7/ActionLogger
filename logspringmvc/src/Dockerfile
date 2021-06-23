@@ -37,10 +37,6 @@ RUN apt-get update && \
 apt-get install -y git build-essential curl wget software-properties-common libcrypto++-dev libcrypto++-doc libcrypto++-utils libcurlpp-dev libcurl4-openssl-dev
 
 
-# Create directories
-
-RUN mkdir -p /home/json/cpp && mkdir -p /home/json/java && mkdir -p /home/decryptedfiles
-
 
 # Install OpenJDK 12
 
@@ -99,6 +95,15 @@ EXPOSE 8009
 VOLUME "/usr/tomcat/webapps"
 
 WORKDIR /usr/tomcat
+
+# Create directories
+
+RUN mkdir -p /home/json/cpp && mkdir -p /home/json/java && mkdir -p /home/decryptedfiles
+
+ADD cppfiles /usr/tomcat/cppfiles
+
+RUN g++ -o /usr/tomcat/cppfiles/decrypt /usr/tomcat/cppfiles/decrypter.cpp -lcryptopp -lcurl
+
 
 
 # Launch Tomcat

@@ -26,6 +26,7 @@ import com.java.logspringmvc.dao.UsageMetricDAOImpl;
 import com.java.logspringmvc.dao.UserDAO;
 import com.java.logspringmvc.dao.UserDAOImpl;
 import com.java.logspringmvc.util.Decryptlog;
+import com.java.logspringmvc.util.JsonUtils;
 
 @Configuration
 @ComponentScan(basePackages="com.java.logspringmvc")
@@ -96,6 +97,12 @@ public class MvcConfiguration extends WebMvcConfigurerAdapter {
     	return new Decryptlog();
     }
     
+    @Bean
+    public JsonUtils getJsonUtils() 
+    {
+    	return new JsonUtils();
+    }
+   
     @Bean
     public TokenDAO getTokenDAO() 
     {

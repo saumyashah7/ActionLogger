@@ -5,6 +5,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,6 +30,7 @@ import com.java.logspringmvc.model.Token;
 import com.java.logspringmvc.model.UsageMetric;
 import com.java.logspringmvc.util.CryptoException;
 import com.java.logspringmvc.util.Decryptlog;
+import com.java.logspringmvc.util.JsonUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,9 +39,9 @@ import org.json.simple.parser.ParseException;
 @Controller
 public class HomeController {
 	
-	private static String UPLOAD_FOLDER_JAVA = "/home/json/java";	
+	private static String UPLOAD_FOLDER_JAVA = "/home/json/java/";	
 	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp/";
-
+	private static String DECRYPTED_FILES_DIR = "/home/decryptedfiles/";
 
 	@Autowired
 	private LogDAO logDAO;
@@ -55,8 +57,11 @@ public class HomeController {
 	
 	@Autowired
 	private Decryptlog dc;
-	
-	public void parseJsonFiles(String dir) throws IOException, ParseException, CryptoException
+		
+	@Autowired
+	private JsonUtils util;
+
+	public void parseJsonFilesJava(String dir) throws IOException, ParseException, CryptoException
 	{
 	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) 
 	    {
@@ -72,11 +77,25 @@ public class HomeController {
 		}
 	
 	}	
+
+	public void parseJsonFiles(String dir) throws IOException
+	{
+	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dir))) 
+	    {
+	        for (Path path : stream) 
+	            if (!Files.isDirectory(path)) 
+	            {
+	            	util.logJsonFile(path.toString());	            	
+	            }
+	    }
+	    catch (Exception e) {
+			// TODO: handle exception
+	    	e.printStackTrace();
+		}
 	
+	}
 	@RequestMapping(value= {"/","/home"})
 	public String listLogs(Model mod) throws IOException, ParseException, CryptoException {
-		String command = "mkdir -p /home/decryptedfiles";
-		Process process = Runtime.getRuntime().exec(command);
 		List<Log> listlogs=logDAO.getLogs(); 
 		mod.addAttribute("listLogs", listlogs);
 		return "home";
@@ -84,7 +103,8 @@ public class HomeController {
 
 	@RequestMapping(value= {"/appusage"})
 	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
-		parseJsonFiles(UPLOAD_FOLDER_JAVA);
+		parseJsonFilesJava(UPLOAD_FOLDER_JAVA);
+		parseJsonFiles(DECRYPTED_FILES_DIR);
 		List<UsageMetric> usagelist = usagemetricDAO.getAppUsage();  
 		mod.addAttribute("usagelist", usagelist);
 		return "appusage";
@@ -234,21 +254,21 @@ public class HomeController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
-//    @RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
-//    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress") String macaddress,HttpServletRequest request) {
-    @RequestMapping(value= {"/upload/cpp/{token}"},method=RequestMethod.POST) 
-    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,HttpServletRequest request) {
+    @RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
+    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress",required = false) String macaddress,HttpServletRequest request) throws InterruptedException{
+    //@RequestMapping(value= {"/upload/cpp/{token}"},method=RequestMethod.POST) 
+    //public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,HttpServletRequest request) throws InterruptedException{ 
     
     	int id=0;
-//    	if(macaddress==null) 
-//    	{
+    	if(macaddress==null) 
+    	{
     		String ipAddress =  request.getRemoteAddr();
-    		id=userDAO.addorgetUser(ipAddress);
-//		}
-//    	else 
-//    	{
-//    		id=userDAO.addorgetUser(macaddress);
-//    	}
+   		id=userDAO.addorgetUser(ipAddress);
+		}
+    	else 
+    	{
+   		id=userDAO.addorgetUser(macaddress);
+    	}
 //		Token token=new Token();
 //		token.setUserid(id);
 //		token.setValue(tok);
@@ -257,18 +277,31 @@ public class HomeController {
 //			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 //		
 //		System.out.println("Verification successfull");
-		System.out.println("reached cpp upload");
 
-        if (file.isEmpty()) new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        if (file.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+
         try
         {
             // Get the file and save it somewhere
             byte[] bytes = file.getBytes();
             Path path = Paths.get(UPLOAD_FOLDER_CPP+file.getOriginalFilename());
+	    System.out.println(file.getOriginalFilename());
             Files.write(path, bytes);
-	    System.out.println("file: "+file.getOriginalFilename());
-	    System.out.println("token: "+tok);
-	    System.out.println("id: "+id);
+
+	    // decrypt the file
+	    String command = "/usr/tomcat/cppfiles/decrypt "+path.toString();
+	    System.out.println(command);
+	    Process process = Runtime.getRuntime().exec(command);
+	    int exitValue = process.waitFor();
+	    if (exitValue != 0) {
+		    System.out.println("Abnormal process termination");
+	    }
+
+	    // move the file to add to the database
+	    String command1 = "mv "+path.toString()+" "+DECRYPTED_FILES_DIR;
+            Process process1 = Runtime.getRuntime().exec(command1);
+	    System.out.println(command1);
+
         }
         catch (IOException e) 
         {
@@ -277,7 +310,27 @@ public class HomeController {
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }
-	
+   
+    @RequestMapping(value= {"/movefile/{fname}"},method=RequestMethod.GET) 
+    public String movefile(@PathVariable(name="fname") String fname, HttpServletRequest request) {
+        try
+        {
+            // Get the file and save it somewhere
+	    System.out.println(fname);
+            Path path = Paths.get(UPLOAD_FOLDER_CPP+fname);
+	    //String command = "/usr/tomcat/cppfiles/decrypt "+path.toString()+ " && sleep 5 && cp "+path.toString()+" "+DECRYPTED_FILES_DIR+" && rm -f "+path.toString();
+	    String command = "mv "+path.toString()+" "+Paths.get(DECRYPTED_FILES_DIR+fname).toString();
+	    System.out.println(command);
+	    Runtime.getRuntime().exec(command);
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        //    return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        }
+        return "home";
+    }
+
 	@RequestMapping(value="/verifyToken/{token}", method=RequestMethod.GET)
 	@ResponseBody
 	public String verifyToken(@PathVariable(name="token") String tok, HttpServletRequest request){		
