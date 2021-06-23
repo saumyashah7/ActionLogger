@@ -256,8 +256,6 @@ public class HomeController {
     
     @RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
     public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress",required = false) String macaddress,HttpServletRequest request) throws InterruptedException{
-    //@RequestMapping(value= {"/upload/cpp/{token}"},method=RequestMethod.POST) 
-    //public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,HttpServletRequest request) throws InterruptedException{ 
     
     	int id=0;
     	if(macaddress==null) 
@@ -269,15 +267,14 @@ public class HomeController {
     	{
    		id=userDAO.addorgetUser(macaddress);
     	}
-//		Token token=new Token();
-//		token.setUserid(id);
-//		token.setValue(tok);
-//		System.out.println("token: "+tok);
-//		if(!tokenDAO.verifyToken(token))
-//			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-//		
-//		System.out.println("Verification successfull");
+	Token token=new Token();
+	token.setUserid(id);
+	token.setValue(tok);
+	//System.out.println("token CPP: "+tok);
+	if(!tokenDAO.verifyToken(token))
+		return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
+	//System.out.println("Verification successfull for CPP");
         if (file.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         try
@@ -285,22 +282,22 @@ public class HomeController {
             // Get the file and save it somewhere
             byte[] bytes = file.getBytes();
             Path path = Paths.get(UPLOAD_FOLDER_CPP+file.getOriginalFilename());
-	    System.out.println(file.getOriginalFilename());
+	    //System.out.println(file.getOriginalFilename());
             Files.write(path, bytes);
 
 	    // decrypt the file
 	    String command = "/usr/tomcat/cppfiles/decrypt "+path.toString();
-	    System.out.println(command);
+	    //System.out.println(command);
 	    Process process = Runtime.getRuntime().exec(command);
 	    int exitValue = process.waitFor();
 	    if (exitValue != 0) {
-		    System.out.println("Abnormal process termination");
+		    System.out.println("Abnormal process termination for CPP file decryption");
 	    }
 
 	    // move the file to add to the database
 	    String command1 = "mv "+path.toString()+" "+DECRYPTED_FILES_DIR;
             Process process1 = Runtime.getRuntime().exec(command1);
-	    System.out.println(command1);
+	    //System.out.println(command1);
 
         }
         catch (IOException e) 
