@@ -1,0 +1,36 @@
+version: "3.3"
+services:
+
+  mysql_eager:
+    image: mysql
+    container_name: mysql_eager
+    restart: on-failure 
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=eager
+      - MYSQL_USER=eageruser
+      - MYSQL_PASSWORD=password
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+
+
+  web:
+    build:
+      context: .
+    restart: on-failure 
+    depends_on:
+      - mysql_eager
+    container_name: tomcat_eager
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=eager
+      - MYSQL_USER=eageruser
+      - MYSQL_PASSWORD=password
+      - URL_BASE=149.165.169.146
+      - MYSQL_CONN_URL=jdbc:mysql://mysql_eager:3306/eager?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
+    ports: 
+      - "8080:8080"
+    command: sh -c './wait-for mysql_eager:3306 -- npm start'
+

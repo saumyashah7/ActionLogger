@@ -12,7 +12,7 @@ import com.utsa.eager.model.UsageMetricId;
 @Repository
 public interface UsageMetricRepository extends JpaRepository<UsageMetric, UsageMetricId>{
 	
-	@Query(value="select um.userid,um.application,um.metric,sum(um.usage_data) as usage_data from usage_metric um group by um.application,um.metric",nativeQuery = true)
+	@Query(value="select count(um.userid),um.application,um.metric,sum(um.usage_data) as usage_data from usage_metric um group by um.application,um.metric",nativeQuery = true)
 	public List<UsageMetric> findAll();
 
 }
