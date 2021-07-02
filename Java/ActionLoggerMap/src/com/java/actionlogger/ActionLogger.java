@@ -50,8 +50,8 @@ public class ActionLogger
     private final static String TRANSFORMATION = "AES";
     //private static final String strkey = "1239567890123456";
     private final static String strkey = "1122334455667788";
-    private final static String UPLOAD_URL = "http://localhost:8080/logspringmvc/upload";
-    private final static String TOKEN_URL = "http://localhost:8080/logspringmvc/getToken";
+    private final static String UPLOAD_URL = "http://149.165.169.146:8080/upload/java";
+    private final static String TOKEN_URL = "http://149.165.169.146:8080/getToken";
 	
 //	public static byte[] getBytesstr(String bytestring) 
 //	{
@@ -170,23 +170,16 @@ public class ActionLogger
     public static boolean checkTimestamp(String timeStamp) throws UnknownHostException, SocketException, IOException {
     	
     	Timestamp curtime= new Timestamp(System.currentTimeMillis());
-    	//System.out.println(curtime);
     	Timestamp pasttime=Timestamp.valueOf(timeStamp);
-    	//System.out.println(pasttime);
-    	
     	long milliseconds1 = pasttime.getTime();
     	long milliseconds2 = curtime.getTime();
-
     	long diff = milliseconds2 - milliseconds1;
+    	
     	long diffSeconds = diff / 1000;
     	long diffMinutes = diff / (60 * 1000);
     	long diffHours = diff / (60 * 60 * 1000);
     	long diffDays = diff / (24 * 60 * 60 * 1000);
-
-//    	System.out.println("Seconds: "+diffSeconds);
-//    	System.out.println("Minutes: "+diffMinutes);
-//    	System.out.println("Hours: "+diffHours);
-//    	System.out.println("Days: "+diffDays);
+    	
     	if(diffMinutes>2) {
     		  sendPOST("actions_"+getMAC()+".json");
     		  return true;
@@ -308,21 +301,21 @@ public class ActionLogger
 		
     }
 
-	public static void main(String[] args) throws CryptoException, NoSuchAlgorithmException, ParseException, IOException {
-//		log("ReActionlogger,main method");
-		log("ReActionlogger");
-		log("ReActionlogger");
-		log("ReActionlogger");
-		log("ReActionlogger");
-//		log("ReActionlogger,main method ");
-//		log("ReActionlogger,login method ");
-//		log("ReActionlogger,login method ");
-//		log("ReActionlogger,messageboards method ");
-//		log("ReActionlogger,messageboards method ");
-//		log("ReActionlogger,messageboards method ");
-//		log("ReActionlogger,messageboards method ");
-		decryptLog("actions_"+getMAC()+".json");
-		//System.out.println(sendTokenGET());
-
-	}
+//	public static void main(String[] args) throws CryptoException, NoSuchAlgorithmException, ParseException, IOException {
+////		log("ReActionlogger,main method");
+//		log("ReActionlogger");
+//		log("ReActionlogger");
+//		log("ReActionlogger");
+//		log("ReActionlogger");
+////		log("ReActionlogger,main method ");
+////		log("ReActionlogger,login method ");
+////		log("ReActionlogger,login method ");
+////		log("ReActionlogger,messageboards method ");
+////		log("ReActionlogger,messageboards method ");
+////		log("ReActionlogger,messageboards method ");
+////		log("ReActionlogger,messageboards method ");
+//		decryptLog("actions_"+getMAC()+".json");
+//		//System.out.println(sendTokenGET());
+//
+//	}
 }
