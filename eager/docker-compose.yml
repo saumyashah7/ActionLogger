@@ -32,5 +32,4 @@ services:
       - MYSQL_CONN_URL=jdbc:mysql://mysql_eager:3306/eager?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
     ports: 
       - "8080:8080"
-    command: sh -c './wait-for mysql_eager:3306 -- npm start'
 

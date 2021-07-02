@@ -40,6 +40,7 @@ public class HomeController {
 	private static String UPLOAD_FOLDER_JAVA = "/home/json/java/";	
 	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp/";
 	private static String DECRYPTED_FILES_DIR = "/home/decryptedfiles/";
+	private static String CPP_DECRYPTER = "/usr/cppfiles/decrypt "; // always keep a space at the end
 	
 	@Autowired
 	private Decryptlog dc;
@@ -90,9 +91,10 @@ public class HomeController {
 	
 	}
 	
+	@RequestMapping(value= {"/","/home}"}, method=RequestMethod.GET)	
 	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
-		//parseJsonFilesJava(UPLOAD_FOLDER_JAVA);
-		//parseJsonFiles(DECRYPTED_FILES_DIR);
+		parseJsonFilesJava(UPLOAD_FOLDER_JAVA);
+		parseJsonFiles(DECRYPTED_FILES_DIR);
 		List<UsageMetric> usagelist = usageMetricService.getAppUsage();
 		mod.addAttribute("usagelist", usagelist);
 		return "appusage";
@@ -250,7 +252,7 @@ public class HomeController {
             Files.write(path, bytes);
 
             // decrypt the file
-            String command = "/usr/tomcat/cppfiles/decrypt "+path.toString();
+            String command = CPP_DECRYPTER + path.toString();
             //System.out.println(command);
             Process process = Runtime.getRuntime().exec(command);
             int exitValue = process.waitFor();
