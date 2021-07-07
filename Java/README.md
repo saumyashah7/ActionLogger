@@ -1,13 +1,13 @@
 # ActionLogger - Java
 
-This library is developed to handle client side operations for java applications. It comes in handy for desktop applications since the web applications can log activities via GET and POST requests. To log the activities in any java project  please follow the steps listed below:
+This library is developed to handle client side operations for java applications. It comes in handy for desktop applications since the web applications can log activities via GET and POST requests. To log the activities in any java project please follow the steps listed below:
 
 - Clone the repository
 ```
 git clone https://github.com/saumyashah7/ActionLogger.git
 ```
 
-- Add the libraries listed in [here](https://github.com/saumyashah7/ActionLogger/tree/master/Java/JAR_files) to the build path of the project
+- Add the libraries listed in ActionLogger/Java/JAR_files or [here](https://github.com/saumyashah7/ActionLogger/tree/master/Java/JAR_files) to the build path of the project
 - Import the action logger and exception libraries in each file that needs to log activity
 ```
 import com.java.actionlogger.ActionLogger;
