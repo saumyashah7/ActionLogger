@@ -17,8 +17,8 @@ This is an installation guide for Actionlogger web application using heroku. The
 - Click on Resources -> search for *ClearDB MYSQL* in Add-ons search bar and select the *ClearDB MYSQL* option.
 - Select the *Ignite - Free* Plan and **Submit Order Form**.
 - Now click on *Settings* from the Dashboard -> Click on **Reveal Config Vars**.
-- copy the value of **CLEARDB_DATABASE_URL** which will be in *mysql://user:password@host/database?reconnect=true* format.
-- connect to the database using the credentials from above URL and execute commands listed in the [file](https://github.com/saumyashah7/ActionLogger/blob/master/Heroku/initdb/start.sql).
+- Copy the value of **CLEARDB_DATABASE_URL** which will be in *mysql://user:password@hostname/database?reconnect=true* format.
+- Connect to the database using the credentials from above URL and execute commands listed in the [file](https://github.com/saumyashah7/ActionLogger/blob/master/Heroku/initdb/start.sql).
 
 ### Webapplication setup
 
@@ -42,6 +42,11 @@ heroku git:remote -a NAME_OF_THE_HEROKU_APP
 - Edit the databae details in the web application
 ```
 vi src\main\resources\application.properties
+```
+
+- Change the permissions for executable
+```
+git update-index --add --chmod=+x decrypt1
 ```
 
 - Deploy the application 
