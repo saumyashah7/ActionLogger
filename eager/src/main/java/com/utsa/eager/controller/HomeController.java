@@ -1,10 +1,18 @@
 package com.utsa.eager.controller;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.utsa.eager.model.Token;
 import com.utsa.eager.model.UsageMetric;
+import com.utsa.eager.model.UsageMetricId;
 import com.utsa.eager.service.TokenService;
 import com.utsa.eager.service.UsageMetricService;
 import com.utsa.eager.service.UserService;
@@ -41,6 +50,8 @@ public class HomeController {
 	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp/";
 	private static String DECRYPTED_FILES_DIR = "/home/decryptedfiles/";
 	private static String CPP_DECRYPTER = "/usr/cppfiles/decrypt "; // always keep a space at the end
+	private static final int BUFFER_SIZE = 4096;
+	private static String CSV_PATH = "E:\\UTSA\\CSVForGA";
 	
 	@Autowired
 	private Decryptlog dc;
@@ -72,7 +83,117 @@ public class HomeController {
 	    	e.printStackTrace();
 		}
 	
-	}	
+	}
+	
+    public static String downloadFile(String fileURL, String saveDir)
+            throws IOException {
+        URL url = new URL(fileURL);
+        HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+        int responseCode = httpConn.getResponseCode();
+        String fileName="";
+ 
+        // always check HTTP response code first
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            //String fileName = "";
+            String disposition = httpConn.getHeaderField("Content-Disposition");
+            String contentType = httpConn.getContentType();
+            int contentLength = httpConn.getContentLength();
+ 
+            if (disposition != null) {
+                // extracts file name from header field
+                int index = disposition.indexOf("filename=");
+                if (index > 0) {
+                    fileName = disposition.substring(index + 10,
+                    		disposition.indexOf("csv")+3);
+                }
+            } else {
+                // extracts file name from URL
+                fileName = fileURL.substring(fileURL.lastIndexOf("/") + 1,
+                        fileURL.length());
+            }
+ 
+//            System.out.println("Content-Type = " + contentType);
+//            System.out.println("Content-Disposition = " + disposition);
+//            System.out.println("Content-Length = " + contentLength);
+//            System.out.println("fileName = " + fileName);
+ 
+            // opens input stream from the HTTP connection
+            InputStream inputStream = httpConn.getInputStream();
+            String saveFilePath = saveDir + File.separator + fileName;
+             
+            // opens an output stream to save into file
+            FileOutputStream outputStream = new FileOutputStream(saveFilePath);
+ 
+            int bytesRead = -1;
+            byte[] buffer = new byte[BUFFER_SIZE];
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+ 
+            outputStream.close();
+            inputStream.close();
+ 
+            //System.out.println("File downloaded");
+        } else {
+            System.out.println("No file to download. Server replied HTTP code: " + responseCode);
+        }
+        httpConn.disconnect();
+        return fileName;
+    }
+	
+	
+	@SuppressWarnings({ "resource", "rawtypes" })
+	@RequestMapping(value= {"/ga"}, method=RequestMethod.GET)	
+	public ResponseEntity parseGACSV(HttpServletRequest request) throws IOException {		
+		String ipAddress =  request.getRemoteAddr();
+		int id=userService.addorgetUser(ipAddress);
+		String fileURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ83oXzjx69Yg9dxBLm0L2Yh5-2m1DBD-ZHwze-DkVhq6Oetl9VXpgaxIrFVoXhW9wJpzPXs5ryuN3h/pub?gid=127643204&single=true&output=csv";
+		String fileName=downloadFile(fileURL, CSV_PATH);
+		int numOfUsers=-1;
+		boolean foundUsers=false;
+		String app="";
+		int cnt=0;
+
+		String line = "";
+		try   
+		{  
+			
+			BufferedReader br = new BufferedReader(new FileReader(Paths.get(CSV_PATH+"\\"+fileName).toString()));  
+			while ((line = br.readLine()) != null) 
+			{
+				if(cnt++ == 0) continue;
+				String[] words=line.split(",");
+				if(words.length==0) continue;
+				if(words[0].equals("View Name")) 
+				{
+					app=words[1];
+					continue;
+				}
+				if(foundUsers) 
+				{
+					numOfUsers=Integer.parseInt(words[0]);
+					break;
+				}
+				if(words[0].equals("Users")) 
+					foundUsers=true;
+			}  
+		}   
+		catch (IOException e)   
+		{  
+			e.printStackTrace();  
+		}  
+		
+		UsageMetric um=new UsageMetric();
+		um.setUserid(id);
+		um.setApplication(app);
+		um.setMetric("Users");
+		um.setUsage(numOfUsers);
+		
+		usageMetricService.updateUsage(um);
+		
+		
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
 
 	public void parseJsonFiles(String dir) throws IOException
 	{
@@ -91,10 +212,8 @@ public class HomeController {
 	
 	}
 	
-	@RequestMapping(value= {"/","/home}"}, method=RequestMethod.GET)	
-	public String listUsage(Model mod) throws IOException, ParseException, CryptoException {
-		parseJsonFilesJava(UPLOAD_FOLDER_JAVA);
-		parseJsonFiles(DECRYPTED_FILES_DIR);
+	@RequestMapping(value= {"/","/home"}, method=RequestMethod.GET)	
+	public String listUsage(Model mod){
 		List<UsageMetric> usagelist = usageMetricService.getAppUsage();
 		mod.addAttribute("usagelist", usagelist);
 		return "appusage";
@@ -182,7 +301,7 @@ public class HomeController {
 	
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value= {"/upload/java/{token}","/upload/java/{token}/{macaddress}"},method=RequestMethod.POST)  
-    public ResponseEntity singleFileUpload(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress",required = false) String macaddress,HttpServletRequest request) {
+    public ResponseEntity singleFileUpload(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress",required = false) String macaddress,HttpServletRequest request) throws IOException, ParseException, CryptoException {
     	int id=0;
     	if(macaddress==null) 
     	{
@@ -215,12 +334,13 @@ public class HomeController {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
+        parseJsonFilesJava(UPLOAD_FOLDER_JAVA);
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
     @SuppressWarnings("rawtypes")
 	@RequestMapping(value= {"/upload/cpp/{token}","/upload/cpp/{token}/{macaddress}"},method=RequestMethod.POST) 
-    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress",required = false) String macaddress,HttpServletRequest request) throws InterruptedException{
+    public ResponseEntity singleFileUploadcpp(@RequestParam("file") MultipartFile file,@PathVariable(name="token") String tok,@PathVariable(name="macaddress",required = false) String macaddress,HttpServletRequest request) throws InterruptedException, IOException{
     
     	int id=0;
     	if(macaddress==null) 
@@ -240,7 +360,7 @@ public class HomeController {
     	if(!tokenService.verifyToken(token))
     		return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
-	//System.out.println("Verification successfull for CPP");
+    	//System.out.println("Verification successfull for CPP");
         if (file.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
         try
@@ -271,6 +391,7 @@ public class HomeController {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }
+        parseJsonFiles(DECRYPTED_FILES_DIR);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
