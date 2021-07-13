@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,9 +33,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.utsa.eager.model.GAapp;
 import com.utsa.eager.model.Token;
 import com.utsa.eager.model.UsageMetric;
 import com.utsa.eager.model.UsageMetricId;
+import com.utsa.eager.service.GAappService;
 import com.utsa.eager.service.TokenService;
 import com.utsa.eager.service.UsageMetricService;
 import com.utsa.eager.service.UserService;
@@ -51,7 +54,8 @@ public class HomeController {
 	private static String DECRYPTED_FILES_DIR = "/home/decryptedfiles/";
 	private static String CPP_DECRYPTER = "/usr/cppfiles/decrypt "; // always keep a space at the end
 	private static final int BUFFER_SIZE = 4096;
-	private static String CSV_PATH = "E:\\UTSA\\CSVForGA";
+	
+	private static String CSV_PATH = "/home/csv/GA/";
 	
 	@Autowired
 	private Decryptlog dc;
@@ -67,6 +71,9 @@ public class HomeController {
 	
 	@Autowired
 	private TokenService tokenService;
+	
+	@Autowired
+	private GAappService gaAppService;
 
 	public void parseJsonFilesJava(String dir) throws IOException, ParseException, CryptoException
 	{
@@ -140,6 +147,22 @@ public class HomeController {
         httpConn.disconnect();
         return fileName;
     }
+    
+    @RequestMapping("/gaapp")
+    public String getappGAform(Model model) {
+    	GAapp gaApp=new GAapp();
+    	model.addAttribute("gaApp",gaApp);    	
+    	return "newGAapp";
+    }
+    
+    @RequestMapping(value="/addgaapp", method=RequestMethod.POST)
+    public String submitForm(@ModelAttribute("gaApp") GAapp app, HttpServletRequest request) {
+		String ipAddress =  request.getRemoteAddr();
+		int id=userService.addorgetUser(ipAddress);
+		app.setUserid(id);
+    	gaAppService.addGAApp(app);
+        return "redirect:/";
+    }
 	
 	
 	@SuppressWarnings({ "resource", "rawtypes" })
@@ -147,7 +170,7 @@ public class HomeController {
 	public ResponseEntity parseGACSV(HttpServletRequest request) throws IOException {		
 		String ipAddress =  request.getRemoteAddr();
 		int id=userService.addorgetUser(ipAddress);
-		String fileURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ83oXzjx69Yg9dxBLm0L2Yh5-2m1DBD-ZHwze-DkVhq6Oetl9VXpgaxIrFVoXhW9wJpzPXs5ryuN3h/pub?gid=127643204&single=true&output=csv";
+		String fileURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ83oXzjx69Yg9dxBLm0L2Yh5-2m1DBD-ZHwze-DkVhq6Oetl9VXpgaxIrFVoXhW9wJpzPXs5ryuN3h/pub?gid=442637996&single=true&output=csv";
 		String fileName=downloadFile(fileURL, CSV_PATH);
 		int numOfUsers=-1;
 		boolean foundUsers=false;
@@ -194,6 +217,59 @@ public class HomeController {
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
+		
+	public void parseGACSVfiles() throws IOException {		
+		//String ipAddress =  request.getRemoteAddr();
+		//int id=userService.addorgetUser(ipAddress);
+		List<GAapp> apps= gaAppService.findAllGAProjects();
+		for(GAapp app:apps) 
+		{
+			String fileURL=app.getUrl();
+			String fileName=downloadFile(fileURL, CSV_PATH);
+			int numOfUsers=-1;
+			boolean foundUsers=false;
+			int cnt=0;
+
+			String line = "";
+			try   
+			{  
+				
+				BufferedReader br = new BufferedReader(new FileReader(Paths.get(CSV_PATH+"\\"+fileName).toString()));  
+				while ((line = br.readLine()) != null) 
+				{
+					if(cnt++ == 0) continue;
+					
+					String[] words=line.split(",");
+					if(words.length==0) 
+						continue;
+
+					if(words[0].equals("Users")) { 
+						foundUsers=true;
+						continue;
+					}
+					if(foundUsers) 
+					{
+						numOfUsers=Integer.parseInt(words[0]);
+						break;
+					}
+					
+				}  
+			}   
+			catch (IOException e)   
+			{  
+				e.printStackTrace();  
+			}  
+			
+			UsageMetric um=new UsageMetric();
+			um.setUserid(app.getUserid());
+			um.setApplication(app.getApplication());
+			um.setMetric("Users");
+			um.setUsage(numOfUsers);
+			
+			usageMetricService.updateUsage(um);	
+		}
+	}
+
 
 	public void parseJsonFiles(String dir) throws IOException
 	{
@@ -213,8 +289,9 @@ public class HomeController {
 	}
 	
 	@RequestMapping(value= {"/","/home"}, method=RequestMethod.GET)	
-	public String listUsage(Model mod){
+	public String listUsage(Model mod) throws IOException{
 		List<UsageMetric> usagelist = usageMetricService.getAppUsage();
+		parseGACSVfiles();
 		mod.addAttribute("usagelist", usagelist);
 		return "appusage";
 	}
