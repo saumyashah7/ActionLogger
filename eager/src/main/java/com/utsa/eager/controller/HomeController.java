@@ -53,9 +53,10 @@ public class HomeController {
 	private static String UPLOAD_FOLDER_CPP = "/home/json/cpp/";
 	private static String DECRYPTED_FILES_DIR = "/home/decryptedfiles/";
 	private static String CPP_DECRYPTER = "/usr/cppfiles/decrypt "; // always keep a space at the end
+	private static String CSV_PATH = "/home/csv/GA/";											 
 	private static final int BUFFER_SIZE = 4096;
 	
-	private static String CSV_PATH = "/home/csv/GA/";
+	
 	
 	@Autowired
 	private Decryptlog dc;
@@ -234,7 +235,7 @@ public class HomeController {
 			try   
 			{  
 				
-				BufferedReader br = new BufferedReader(new FileReader(Paths.get(CSV_PATH+"\\"+fileName).toString()));  
+				BufferedReader br = new BufferedReader(new FileReader(Paths.get(CSV_PATH+"/"+fileName).toString()));  
 				while ((line = br.readLine()) != null) 
 				{
 					if(cnt++ == 0) continue;
@@ -392,11 +393,11 @@ public class HomeController {
 		Token token=new Token();
 		token.setUserid(id);
 		token.setValue(tok);
-		System.out.println("token: "+tok);
+		
 		if(!tokenService.verifyToken(token))
 			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 		
-		System.out.println("Verification successfull");
+		
 
         if (file.isEmpty()) new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         try
