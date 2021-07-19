@@ -1,0 +1,294 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#            to use the OpenSees framework.
+#
+#   version created for TACC ranger & their Portland Group Compilers
+#
+#  Written by: fmk
+#  Modified by: Johan Sebastian Yepes Rios
+#  Created: 02/2008
+#  Modified: 04/2019
+#
+#
+############################################################################
+
+# PUT YOUR HOME DIRECTOREY HERE IF NOT THE DEFAULT ONE IN
+HOME  = /home/SP_Try
+
+BASE  = /usr/local
+
+FE    = $(HOME)/OpenSees/SRC
+
+PROGRAMMING_MODE = PARALLEL
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSeesSP
+
+# %---------------------------------%
+# |  SECTION 2: MAKEFILE CONSTANTS  |
+# %---------------------------------%
+#
+# Specify the constants the are used as control structure variables in the Makefiles.
+
+OPERATING_SYSTEM = LINUX
+DEBUG_MODE = NO_DEBUG
+RELIABILITY = NO_RELIABILITY
+
+GRAPHICS = NONE
+
+AMDdir       = $(HOME)/OpenSees/OTHER/AMD
+BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_5.1.1/SRC
+SUPERLU_DISTdir   = $(HOME)/OpenSees/OTHER/SuperLU_DIST_4.3/SRC
+ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+CSPARSEdir   = $(HOME)/OpenSees/OTHER/CSPARSE
+SRCdir       = $(HOME)/OpenSees/SRC
+
+
+DIRS        = $(BLASdir) $(CBLASdir) $(LAPACKdir) $(AMDdir) $(CSPARSEdir) \
+        $(SUPERLUdir) $(ARPACKdir) $(UMFPACKdir) $(SRCdir) $(METISdir) $(SUPERLU_DISTdir)
+
+# %-------------------------------------------------------%
+# | SECTION 4: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  |
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk
+# library!!
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY          = $(HOME)/lib/libOpenSees.a
+NDARRAY_LIBRARY     = $(HOME)/lib/libndarray.a  # BJ_UCD jeremic@@ucdavis.edu
+MATMOD_LIBRARY      = $(HOME)/lib/libmatmod.a   # BJ_UCD jeremic@@ucdavis.edu
+BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@@ucdavis.edu
+LAPACK_LIBRARY 	    = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
+SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+AMD_LIBRARY         = $(HOME)/lib/libAMD.a
+CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
+ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY       = $(HOME)/lib/libMetis.a
+CSPARSE_LIBRARY     = $(HOME)/lib/libCSparse.a
+DISTRIBUTED_SUPERLU_LIBRARY     = $(HOME)/lib/libDistributedSuperLU.a
+
+TCL_LIBRARY = /usr/lib/x86_64-linux-gnu/libtcl8.5.so
+TCL_INCLUDES =
+
+GRAPHIC_LIBRARY     =
+
+RELIABILITY_LIBRARY =
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+
+WIPE_LIBS	= $(FE_LIBRARY) \
+           $(NDARRAY_LIBRARY) \
+           $(MATMOD_LIBRARY) \
+           $(SUPERLU_LIBRARY) \
+           $(ARPACK_LIBRARY) \
+           $(AMD_LIBRARY) \
+           $(UMFPACK_LIBRARY) \
+           $(METIS_LIBRARY) \
+           $(LAPACK_LIBRARY) \
+           $(BLAS_LIBRARY) \
+           $(CBLAS_LIBRARY) \
+	   $(DISTRIBUTED_SUPERLU_LIBRARY)
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# ###################################################
+# # Compilers
+# ###################################################
+
+
+MPI_DIR = /home/mpich-install
+MPI_BIN = $(MPI_DIR)/bin
+
+CC++ =/home/mpich-install/bin/mpic++ -I/usr/include/curlpp -L/usr/lib/x86_64-linux-gnu 
+CC = /home/mpich-install/bin/mpicc -I/usr/include/curlpp -L/usr/lib/x86_64-linux-gnu 
+FC = /home/mpich-install/bin/mpif90
+F90             =  $(FC)
+FORTRAN         =  $(FC)
+
+LINKER          =  $(CC++)
+
+AR			= ar
+ARCH		= ar
+
+ARFLAGS     = -q
+ARCHFLAGS   = -v -q
+
+RANLIB		= ranlib
+RANLIBFLAGS =
+
+GRAPHIC_FLAG = -D_NOGRAPHICS
+
+PROGRAMMING_FLAG = -D_PARALLEL_PROCESSING
+
+C++FLAGS         = -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG)\
+					$(PROGRAMMING_FLAG)  $(PETSC_FLAG) $(MUMPS_FLAG) \
+					-D_TCL85 -D_BLAS -O3 -ffloat-store -fopenmp -lcryptopp -L/usr/lib/x86_64-linux-gnu -lcurl 
+
+CFLAGS          =  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG)$(PROGRAMMING_FLAG) $(OPT_FLAG) $(COMP_FLAG) -D_TCL85 -D_BLAS -O2 -fopenmp -std=gnu99
+FFLAGS          =  $(OPT_FLAG) $(COMP_FLAG) -O
+
+# Linker
+LINKER          = $(CC++)
+LINKFLAGS       = -L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
+
+# Misc
+MAKE            = /usr/bin/gmake
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 6: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES:	.C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-------------------------------------------%
+# |  Command to build .o files from .f files. |
+# %-------------------------------------------%
+#
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $< -o $@
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+.f.o:
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+# %---------------------------------------------------------%
+# | SECTION 7: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib \
+                    -L$(HOME)/lib \
+			-L$(MPI_DIR)/lib \
+			-L/usr/lib \
+			-L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
+
+# PETSC
+HAVEPETSC = NO
+PETSCINC =
+PETSC_LIB =
+
+HAVEMUMPS = YES
+
+ifeq ($(HAVEMUMPS), YES)
+
+MUMPS = YES
+MUMPS_FLAG = -D_MUMPS -D_OPENMPI
+MUMPS_DIR = /home/Parallel/MUMPS
+SCOTCHDIR  = /home/Parallel/scotch
+METISDIR = /home/Parallel/parmetis/metis
+PARMETISDIR = /home/Parallel/parmetis
+
+PLAT    = LINUX
+
+MUMPS_LIB = -L/home/Parallel/MUMPS/lib -ldmumps -lpord  -lmumps_common -lpord \
+	/home/Parallel/scalapack/libscalapack.a \
+        -L$(SCOTCHDIR)/lib -lptesmumps -lptscotch -lptscotcherr -lscotch \
+	-L$(PARMETISDIR)/lib -lparmetis \
+	-L$(METISDIR)/lib -lmetis \
+	-L/home/mpich-install/lib -lmpi -lmpifort
+	
+
+MUMPS_INCLUDE = $(MUMPS_DIR)/include
+
+endif
+
+PARALLEL_LIB = 	/home/Parallel/scalapack/libscalapack.a \
+		/home/Parallel/lapack/liblapack.a \
+		/home/Parallel/blas/BLAS-3.8.0/blas_LINUX.a \
+		/home/Parallel/lapack/libtmglib.a \
+		/home/Parallel/mpiblacs/BLACS/LIB/blacs_MPI-LINUX-0.a \
+		/home/Parallel/mpiblacs/BLACS/LIB/blacsCinit_MPI-LINUX-0.a \
+		/home/Parallel/mpiblacs/BLACS/LIB/blacsF77init_MPI-LINUX-0.a \
+		-L/home/mpich-install/lib -lmpi -lmpifort 
+		
+		
+
+MACHINE_NUMERICAL_LIBS  = -L/usr/lib/x86_64-linux-gnu -lm \
+			  $(ARPACK_LIBRARY) \
+			  $(SUPERLU_LIBRARY) \
+			  $(UMFPACK_LIBRARY) \
+			  $(AMD_LIBRARY) \
+			  $(GRAPHIC_LIBRARY)\
+			  $(RELIABILITY_LIBRARY) \
+			  $(DISTRIBUTED_SUPERLU_LIBRARY) $(CSPARSE_LIBRARY) \
+			  $(MUMPS_LIB) $(CBLAS_LIBRARY) $(METIS_LIBRARY) \
+			  -L/usr/lib/x86_64-linux-gnu -ldl -lgfortran -lpthread
+
+MACHINE_SPECIFIC_LIBS =  $(PARALLEL_LIB) -fopenmp
+
+# %---------------------------------------------------------%
+# | SECTION 8: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+
+MACHINE_INCLUDES = -I/usr/include \
+	-I/usr/include/c++/7.5.0 \
+	-I/usr/include/x86_64-linux-gnu \
+	-I$(MPI_DIR)/include \
+	-I$(HOME)/include   \
+	-I$(UMFPACKdir) \
+	-I$(SUPERLUdir) \
+	-I$(SUPERLU_DISTdir) \
+	-I$(MUMPS_INCLUDE)
+
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+TCL_INCLUDES = -I/usr/include/tcl8.5/tcl-private/generic
+
+INCLUDES =  $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) 
+
+
