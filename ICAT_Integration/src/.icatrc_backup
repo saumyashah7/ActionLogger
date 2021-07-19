@@ -1,0 +1,17 @@
+########################################################################
+# Source file for the ICAT package
+#   Last change : Wed Apr 19 11:06:57 CDT 2017
+########################################################################
+
+####  User name :                        Please change your name!
+      my_name=undef                      # not used, yet
+
+####  ICAT main directory :              Change this, if you don't use the standard installation!
+      dir_icat=/scratch/01698/rauta/testICAT/src/
+#      dir_icat=./
+
+####  Default: verbosity
+      iverb=0
+
+####  Default: hints
+      ihint=0

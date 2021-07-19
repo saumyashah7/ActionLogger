@@ -1,0 +1,12 @@
+25892 
+64800855956  instructions:u 5477904461 50.00    
+23198657477  L1-dcache-loads:u 6848306984 62.51    
+5004434836  L1-dcache-stores:u 8217458598 75.00    
+20161  LLC-loads:u 6847862595 62.50    
+2888  LLC-stores:u 6847952937 62.50    
+2295491  L1-dcache-load-misses:u 8217607101 75.01 0.01 of all L1-dcache hits
+<not supported>  L1-dcache-store-misses:u 0 100.00    
+12793  LLC-load-misses:u 4108161300 37.50 63.45 of all LL-cache hits
+2566  LLC-store-misses:u 4108070958 37.50    
+17.469332842
+0

@@ -1,0 +1,19 @@
+----- md_omp Characteristics -----
+Memory usage: 0.0246925	Cache Miss Rate: 5.00212e-25
+ 
+----- Recommendations -----
+
+Application fits into HBM.
+
+Mode to use: If numactl is available, use the Flat-Mode with all allocations to HBM.
+
+If numactl is not available, then use the Cache-Mode. However, note that the cache misses in the Cache-Mode are more expensive than reading data from DDR4 in Flat-Mode.
+
+Memory Allocation: HBM
+To execute the application in FLat-Mode: Use command < numactl --membind=1 ./run-app> if it is serial, or < ibrun --membind=1 ./run-app > if it is parallel. 
+
+To execute the application in Cache-mode: Use the command that you normally use, that is, < ./run-app > if it is serial or < ibrun ./run-app > if it is parallel. 
+
+In general, to determine the <NUMA_NODE> in the command < numactl --membind=NUMA_NODE > , run the command < numactl -H > and look for the node without any core
+
+ ----- End ICAT report for md_omp -----
