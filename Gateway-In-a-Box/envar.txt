@@ -1,0 +1,37 @@
+# Contains all the necessary environmental variables to setup the middle-layer completely
+
+
+
+
+# DATABASE
+
+# MySQL
+# Assumes to be at the same URL as URL_BASE
+MYSQL_DATABASE=iptweb
+MYSQL_ROOT_PASSWORD=password
+MYSQL_USER=iptuser
+MYSQL_PASSWORD=password
+
+
+# MANAGER NODE
+
+orchestra_key=orchestra
+URL_BASE=149.165.170.123
+PROJECT=gib
+gthreads=4
+
+
+# GREYFISH STORAGE
+greyfish_key=greyfish
+greyfish_path=/greyfish
+greyfish_threads=4
+
+
+# EMAIL
+SENDER_EMAIL=saumyashahdev@gmail.com
+SENDER_EMAIL_PASSWORD=Theoffice2020
+
+
+# MYSQL OTHERS
+MYSQL_CONN_URL=jdbc:mysql://149.165.170.123:6603/iptweb?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=CONVERT_TO_NULL
+MYSQL_TABLE=assignment
