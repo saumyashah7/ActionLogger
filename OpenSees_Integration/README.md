@@ -7,7 +7,7 @@ This documents guides through the the installation of OpenSees Application integ
 cd /home
 ```
 
-- Execute each command listed in the [Installation_steps](./installation_steps.txt) file.
+- Execute each command listed in the [Installation_steps](./Installation_steps.txt) file.
 
 - Run the OpenSees application using one of the following three commands.
 ```
