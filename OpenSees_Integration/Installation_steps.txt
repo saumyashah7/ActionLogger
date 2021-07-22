@@ -101,12 +101,12 @@ cp /home/ActionLogger/OpenSees_Integration/OpenSees/Makefile.def /home/OpenSees/
 cp /home/ActionLogger/OpenSees_Integration/OpenSees/SRC/tcl/* /home/OpenSees/SRC/tcl/ && \
 cd /home/OpenSees/ && make wipe && make
 
-cp /home/ActionLogger/OpenSees_Integration/SP_Try/Makefile.def /home/SP_Try/Makefile.def && \
-cp /home/ActionLogger/OpenSees_Integration/SP_Try/SRC/tcl/* /home/SP_Try/SRC/tcl/ && \
+cp /home/ActionLogger/OpenSees_Integration/SP_Try/OpenSees/Makefile.def /home/SP_Try/OpenSees/Makefile.def && \
+cp /home/ActionLogger/OpenSees_Integration/SP_Try/OpenSees/SRC/tcl/* /home/SP_Try/OpenSees/SRC/tcl/ && \
 cd /home/SP_Try/ && make wipe && make
 
-cp /home/ActionLogger/OpenSees_Integration/SEQ/Makefile.def /home/SEQ/Makefile.def && \
-cp /home/ActionLogger/OpenSees_Integration/SEQ/SRC/tcl/* /home/SEQ/SRC/tcl/ && \
+cp /home/ActionLogger/OpenSees_Integration/SEQ/OpenSees/Makefile.def /home/SEQ/OpenSees/Makefile.def && \
+cp /home/ActionLogger/OpenSees_Integration/SEQ/OpenSees/SRC/tcl/* /home/SEQ/OpenSees/SRC/tcl/ && \
 cd /home/SEQ/ && make wipe && make
 
 cp -r /home/SP_Try/bin/OpenSeesSP /home/bin/ && cp -r /home/SEQ/bin/OpenSees /home/bin/
