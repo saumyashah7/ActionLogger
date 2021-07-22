@@ -1,0 +1,127 @@
+
+
+apt-get update && apt-get upgrade -y 
+
+apt-get --no-install-recommends -y install build-essential gcc g++ gfortran make cmake dkms tcl8.5 tcl8.5-dev zlib1g-dev flex bison python python-dev python3-dev git vim ca-certificates wget 
+
+apt-get install -y libcrypto++-dev libcrypto++-doc libcrypto++-utils libcurlpp-dev libcurl4-openssl-dev
+
+wget https://www.mpich.org/static/downloads/3.3.2/mpich-3.3.2.tar.gz 
+
+tar xf mpich-3.3.2.tar.gz && mkdir -p /home/mpich-install 
+
+cd /home/mpich-3.3.2 && \
+./configure --prefix=/home/mpich-install 2>&1 | tee c.txt && \
+make 2>&1 | tee m.txt && make install 2>&1 | tee mi.txt 
+
+export PATH="/home/mpich-install/bin:${PATH}"
+
+mkdir -p /home/Parallel 
+
+wget http://www.netlib.org/scalapack/scalapack-2.0.2.tgz && tar xf scalapack-2.0.2.tgz && mv scalapack-2.0.2 /home/Parallel/scalapack
+
+mkdir -p /home/Parallel/mpiblacs && mkdir -p /home/Parallel/mpiblacs-patch03
+
+wget https://www.netlib.org/blacs/mpiblacs.tgz && tar xf mpiblacs.tgz && mv BLACS /home/Parallel/mpiblacs/
+
+wget https://www.netlib.org/blacs/mpiblacs-patch03.tgz && tar xf mpiblacs-patch03.tgz && mv BLACS /home/Parallel/mpiblacs-patch03/
+
+wget http://www.netlib.org/lapack/lapack-3.4.1.tgz && tar xf lapack-3.4.1.tgz && mv lapack-3.4.1 /home/Parallel/lapack
+
+mkdir -p /home/Parallel/blas 
+
+wget http://www.netlib.org/blas/blas-3.8.0.tgz && tar xf blas-3.8.0.tgz && mv BLAS-3.8.0 /home/Parallel/blas
+
+wget https://src.fedoraproject.org/lookaside/extras/xblas/xblas-1.0.248.tar.gz/990c680fb5e446bb86c10936e4cd7f88/xblas-1.0.248.tar.gz && \
+\
+tar xf xblas-1.0.248.tar.gz && mv xblas-1.0.248 /home/Parallel/xblas
+
+wget http://mumps.enseeiht.fr/MUMPS_5.0.2.tar.gz && tar xf MUMPS_5.0.2.tar.gz && mv MUMPS_5.0.2 /home/Parallel/MUMPS
+
+wget https://gforge.inria.fr/frs/download.php/file/37622/scotch_6.0.6.tar.gz && tar xf scotch_6.0.6.tar.gz && mv scotch_6.0.6 /home/Parallel/scotch
+
+wget http://glaros.dtc.umn.edu/gkhome/fetch/sw/parmetis/parmetis-4.0.3.tar.gz && tar xf parmetis-4.0.3.tar.gz && mv parmetis-4.0.3 /home/Parallel/parmetis
+
+cd /home
+
+git -c http.sslVerify=false clone https://github.com/jaidip15/project_OP.git 
+
+rm -rf /home/Parallel/blas/BLAS-3.8.0/make.inc
+
+cp /home/project_OP/parallel_make/blas/make.inc /home/Parallel/blas/BLAS-3.8.0/make.inc && ulimit -s unlimited && \
+cd /home/Parallel/blas/BLAS-3.8.0/ && make
+
+rm -rf /home/Parallel/xblas/make.inc
+
+cp /home/project_OP/parallel_make/xblas/make.inc /home/Parallel/xblas/make.inc && ulimit -s unlimited && \
+cd /home/Parallel/xblas/ && make
+
+cp /home/project_OP/parallel_make/lapack/make.inc /home/Parallel/lapack/make.inc && ulimit -s unlimited && \
+cd /home/Parallel/lapack/ && make
+
+cp /home/project_OP/parallel_make/mpiblacs/Bmake.inc /home/Parallel/mpiblacs/BLACS/Bmake.inc && ulimit -s unlimited && \
+cd /home/Parallel/mpiblacs/BLACS/ && make MPI
+
+cp /home/project_OP/parallel_make/scalapack/SLmake.inc /home/Parallel/scalapack/SLmake.inc && ulimit -s unlimited && \
+cd /home/Parallel/scalapack/ && make
+
+rm -rf /home/Parallel/parmetis/include/parmetis.h && rm -rf /home/Parallel/parmetis/metis/include/metis.h
+
+cp /home/project_OP/parallel_make/parmetis/parmetis.h /home/Parallel/parmetis/include/parmetis.h 
+
+cp /home/project_OP/parallel_make/metis/metis.h /home/Parallel/parmetis/metis/include/metis.h
+
+cd /home/Parallel/parmetis/ && ulimit -s unlimited && \
+make config openmp=-fopenmp cc=/home/mpich-install/bin/mpicc cxx=/home/mpich-install/bin/mpicxx prefix=/home/Parallel/parmetis/ && make install
+
+cd /home/Parallel/parmetis/metis && ulimit -s unlimited && \
+make config openmp=-fopenmp cc=/home/mpich-install/bin/mpicc prefix=/home/Parallel/parmetis/metis && make install
+
+cp /home/project_OP/parallel_make/scotch/Makefile.inc /home/Parallel/scotch/src/Makefile.inc && ulimit -s unlimited && \
+cd /home/Parallel/scotch/src/ && make ptscotch && make ptesmumps
+
+cp /home/project_OP/parallel_make/MUMPS/Makefile.inc /home/Parallel/MUMPS/Makefile.inc && ulimit -s unlimited && \
+cd /home/Parallel/MUMPS/ && make alllib && make all
+
+cd /home
+
+git -c http.sslVerify=false clone https://github.com/OpenSees/OpenSees.git
+
+mkdir -p /home/bin && mkdir -p /home/lib && mkdir -p /home/SP_Try/bin && mkdir -p /home/SP_Try/lib && mkdir -p /home/SEQ/bin && mkdir -p /home/SEQ/lib
+
+git -c http.sslVerify=false clone https://github.com/saumyashah7/ActionLogger.git
+
+cp -r /home/ActionLogger/CPP/eagercpp /home/OpenSees/SRC/
+
+cp -r /home/OpenSees /home/SP_Try/ && cp -r /home/OpenSees /home/SEQ/
+
+ln -s /usr/bin/make /usr/bin/gmake
+
+cp /home/ActionLogger/OpenSees_Integration/OpenSees/Makefile.def /home/OpenSees/Makefile.def && \
+cp /home/ActionLogger/OpenSees_Integration/OpenSees/SRC/tcl/* /home/OpenSees/SRC/tcl/ && \
+cd /home/OpenSees/ && make wipe && make
+
+cp /home/ActionLogger/OpenSees_Integration/SP_Try/Makefile.def /home/SP_Try/Makefile.def && \
+cp /home/ActionLogger/OpenSees_Integration/SP_Try/SRC/tcl/* /home/SP_Try/SRC/tcl/ && \
+cd /home/SP_Try/ && make wipe && make
+
+cp /home/ActionLogger/OpenSees_Integration/SEQ/Makefile.def /home/SEQ/Makefile.def && \
+cp /home/ActionLogger/OpenSees_Integration/SEQ/SRC/tcl/* /home/SEQ/SRC/tcl/ && \
+cd /home/SEQ/ && make wipe && make
+
+cp -r /home/SP_Try/bin/OpenSeesSP /home/bin/ && cp -r /home/SEQ/bin/OpenSees /home/bin/
+
+export PATH="/home/bin:${PATH}"
+
+
+
+
+
+
+
+
+
+
+
+
+
