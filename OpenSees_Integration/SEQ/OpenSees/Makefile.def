@@ -160,8 +160,8 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 # %---------------------------------------------------------%
 
 # Compilers
-CC++	= /usr/bin/g++
-CC      = /usr/bin/gcc
+CC++	= /usr/bin/g++ -I/usr/include/curlpp -L/usr/lib/x86_64-linux-gnu 
+CC      = /usr/bin/gcc -I/usr/include/curlpp -L/usr/lib/x86_64-linux-gnu 
 FC	= /usr/bin/gfortran
 
 AR		= ar 
@@ -183,13 +183,13 @@ ifeq ($(INTERPRETER_LANGUAGE), PYTHON)
 
 C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
-	$(PROGRAMMING_FLAG) -fPIC -ffloat-store 
+	$(PROGRAMMING_FLAG) -fPIC -ffloat-store -lcryptopp -L/usr/lib/x86_64-linux-gnu -lcurl 
 CFLAGS          = -Wall -fPIC
 FFLAGS          = -Wall -fPIC
 
 # Linker
 LINKER          = $(CC++)
-LINKFLAGS       = -g -pg
+LINKFLAGS       = -g -pg -L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
 
 else
 
@@ -201,7 +201,7 @@ FFLAGS          = -Wall -O
 
 # Linker
 LINKER          = $(CC++)
-LINKFLAGS       = -rdynamic 
+LINKFLAGS       = -rdynamic -L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
 
 endif
 
@@ -259,7 +259,7 @@ SHELL           = /bin/sh
 # | platform specific and typically order does matter!!     |
 # %---------------------------------------------------------%
 MACHINE_LINKLIBS  = -L$(BASE)/lib \
-		-L$(HOME)/lib 
+		-L$(HOME)/lib -L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
 
 MACHINE_NUMERICAL_LIBS  = -L/usr/lib/x86_64-linux-gnu -lm \
 		$(ARPACK_LIBRARY) \

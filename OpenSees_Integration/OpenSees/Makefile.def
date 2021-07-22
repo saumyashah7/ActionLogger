@@ -122,8 +122,8 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 MPI_DIR = /home/mpich-install
 MPI_BIN = $(MPI_DIR)/bin
 
-CC++ =/home/mpich-install/bin/mpic++
-CC = /home/mpich-install/bin/mpicc
+CC++ =/home/mpich-install/bin/mpic++ -I/usr/include/curlpp -L/usr/lib/x86_64-linux-gnu 
+CC = /home/mpich-install/bin/mpicc -I/usr/include/curlpp -L/usr/lib/x86_64-linux-gnu 
 FC = /home/mpich-install/bin/mpif90
 F90             =  $(FC)
 FORTRAN         =  $(FC)
@@ -145,14 +145,14 @@ PROGRAMMING_FLAG = -D_PARALLEL_INTERPRETERS
 
 C++FLAGS         = -D_LINUX -D_UNIX  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(OPT_FLAG) $(COMP_FLAG)\
 					$(PROGRAMMING_FLAG)  $(PETSC_FLAG) $(MUMPS_FLAG) \
-					-D_TCL85 -D_BLAS -O3 -ffloat-store -fopenmp -lcryptopp -lcurl 
+					-D_TCL85 -D_BLAS -O3 -ffloat-store -fopenmp -lcryptopp -L/usr/lib/x86_64-linux-gnu -lcurl 
 
 CFLAGS          =  $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG)$(PROGRAMMING_FLAG) $(OPT_FLAG) $(COMP_FLAG) -D_TCL85 -D_BLAS -O2 -fopenmp -std=gnu99
 FFLAGS          =  $(OPT_FLAG) $(COMP_FLAG) -O
 
 # Linker
 LINKER          = $(CC++)
-LINKFLAGS       =
+LINKFLAGS       = -L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
 
 # Misc
 MAKE            = /usr/bin/gmake
@@ -209,7 +209,7 @@ SHELL           = /bin/sh
 MACHINE_LINKLIBS  = -L$(BASE)/lib \
                     -L$(HOME)/lib \
 			-L$(MPI_DIR)/lib \
-			-L/usr/lib
+			-L/usr/lib -L/usr/lib/x86_64-linux-gnu -lcurl -lcryptopp
 
 # PETSC
 HAVEPETSC = NO

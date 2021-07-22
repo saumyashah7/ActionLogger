@@ -185,7 +185,7 @@ bool checkTimestamp(std::string timest)
 
 std::string getToken()
 {	
-	    const std::string url("http://149.165.169.146:8443/getToken");
+	    const std::string url("https://eagerapp1.herokuapp.com/getToken");
 	    
 	    CURL* curl = curl_easy_init();
 	    
@@ -249,7 +249,7 @@ void sendPost()
 	struct curl_httppost *lastptr = NULL;
 	struct curl_slist *headerlist = NULL;
 	static const char buf[] =  "Expect:";
-	std::string strurl= "http://149.165.169.146:8443/upload/cpp/"+getToken();
+	std::string strurl= "https://eagerapp1.herokuapp.com/upload/cpp/"+getToken();
 	char* url = const_cast<char*>(strurl.c_str());
 
 	curl_global_init(CURL_GLOBAL_ALL);
