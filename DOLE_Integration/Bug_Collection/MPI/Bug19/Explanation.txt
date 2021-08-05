@@ -1,0 +1,36 @@
+In the buggy version, the array values are used without being initialized by MPI process with id ==1. Depending upon the exisitng value of the arrays, one can get segementation fault while executing this statement: result[i] = mapper[toMap[i]];
+
+Note that, only process with id==0 has the values of the arrays "mapper" and "toMap" set. This process should broadcast (or share) the values in these arrays with other MPI processes if they need to use these arrays in the way as shown in the buggy_version.cpp.
+
+
+The buggy version has:
+``````````````````````````````
+   if(id==0){
+       for(int n=0; n<IN; n++){   //predecided map values
+           toMap[n] = rand()%IN;
+           mapper[n] = rand()%101;
+       }
+       printf("\n");
+   }
+   if(id == 0){
+       for(int n=0; n<IN; n++){   //map results
+           printf("[%d -> %d]\n", toMap[n], mapper[n]);
+       }
+   }
+   int d = IN/p;
+   int i = id*d;
+   while(i<id*d+d && i<IN){
+        result[i] = mapper[toMap[i]];
+        i++;
+   }
+``````````````````````````````
+There is no communication between tasks, therefore the other tasks that are supposed to receive data from root are not performing the calculations correctly.
+
+
+* Error message
+
+```
+tasks 1-2: Segmentation fault
+task 3: Bus error
+task 0: Terminated
+```

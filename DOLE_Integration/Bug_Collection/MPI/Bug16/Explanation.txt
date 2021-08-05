@@ -1,0 +1,8 @@
+Instead of specifying the count (number) of elements that should be exchanged between the Send and Revc processes, the size of the data that would need to be exchanged is provided in the Send and Revc calls. This can result in non-deterministic behaviour of the program.
+
+
+* Error message
+
+```
+Assertion failed in file /.../commutil.c at line 1010: MPIU_Object_get_ref((comm_ptr->coll_fns)) >= 0
+```

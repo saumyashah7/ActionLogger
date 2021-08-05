@@ -1,0 +1,10 @@
+//Note from Ritu: need to revisit this explanation.
+Error: incorrect output due to choice of the collective for handling data distribution.
+
+In this case, 2 elements are updated in one iteration except for the last iteration.
+
+The buggy version does not handle this case.
+
+* Error message
+
+None
