@@ -35,16 +35,16 @@ import org.json.simple.parser.ParseException;
 import com.java.actionloggerexception.CryptoException;
 
 
-public class ActionLogger 
+public class ActionLogger_backup 
 {	
 	private final static String ALGORITHM = "AES";
     private final static String TRANSFORMATION = "AES";
     //private static final String strkey = "1239567890123456";
     private final static String strkey = "1122334455667788";
-    //private final static String UPLOAD_URL = "http://129.114.104.163:8080/upload/java";
-    //private final static String TOKEN_URL = "http://129.114.104.163:8080/getToken";
-    private final static String UPLOAD_URL = "https://eagerapp1.herokuapp.com/upload/java";
-    private final static String TOKEN_URL = "https://eagerapp1.herokuapp.com/getToken";
+    private final static String UPLOAD_URL = "http://129.114.104.163:8080/upload/java";
+    private final static String TOKEN_URL = "http://129.114.104.163:8080/getToken";
+    //private final static String UPLOAD_URL = "https://eagerapp1.herokuapp.com/upload/java";
+    //private final static String TOKEN_URL = "https://eagerapp1.herokuapp.com/getToken";
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void decryptLog(String filename) throws FileNotFoundException, IOException, ParseException, CryptoException 
@@ -104,8 +104,6 @@ public class ActionLogger
     }
 
     public static String getMAC() throws UnknownHostException, SocketException {
-    	String macAddress="";
-    	try {
     	InetAddress localHost = InetAddress.getLocalHost();
     	NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
     	byte[] hardwareAddress = ni.getHardwareAddress();
@@ -113,13 +111,7 @@ public class ActionLogger
     	for (int i = 0; i < hardwareAddress.length; i++) {
     	    hexadecimal[i] = String.format("%02X", hardwareAddress[i]);
     	}
-    	macAddress = String.join("-", hexadecimal);
-    	}
-    	catch(Exception e){
-    		return "anonymous-MAC-ex";
-    	}
-    	if(macAddress.length()==0 || macAddress==null) 
-    		return "anonymous-MAC";
+    	String macAddress = String.join("-", hexadecimal);
     	return macAddress;
     }
     
@@ -172,7 +164,7 @@ public class ActionLogger
     }
     
     @SuppressWarnings("unchecked")
-	public static void log(String msg) throws Exception 
+	public static void log(String msg) throws IOException, ParseException, CryptoException 
     {
     	if(msg.split(",").length==1) 
     	{
@@ -282,5 +274,23 @@ public class ActionLogger
 			writer.close();
     	}
 		
-    }	
+    }
+
+	public static void main(String[] args) throws CryptoException, NoSuchAlgorithmException, ParseException, IOException {
+//		log("ReActionlogger,main method");
+		log("ReActionlogger123,met1");
+		log("ReActionlogger123,met2");
+		log("ReActionlogger123,met3");
+		log("ReActionlogger123,met4");
+//		log("ReActionlogger,main method ");
+//		log("ReActionlogger,login method ");
+//		log("ReActionlogger,login method ");
+//		log("ReActionlogger,messageboards method ");
+//		log("ReActionlogger,messageboards method ");
+//		log("ReActionlogger,messageboards method ");
+//		log("ReActionlogger,messageboards method ");
+		decryptLog("actions_"+getMAC()+".json");
+		//System.out.println(sendTokenGET());
+
+	}
 }
