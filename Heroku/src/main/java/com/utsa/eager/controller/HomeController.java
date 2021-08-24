@@ -320,7 +320,10 @@ public class HomeController {
 		if(!tokenService.verifyToken(token))
 			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 		
-		usageMetricService.incrementUsage(um);
+		if(obj.has("count"))
+			usageMetricService.incrementUsagebyCount(um,obj.getInt("count"));
+		else					  
+			usageMetricService.incrementUsage(um);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 	

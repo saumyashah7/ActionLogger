@@ -58,6 +58,39 @@ public class UsageMetricServiceImpl implements UsageMetricService {
 	}
 
 	@Override
+	public void incrementUsagebyCount(UsageMetric usageMetric, int count) {
+		// TODO Auto-generated method stub
+		Optional<UsageMetric> um=null;
+		um = usageMetricRepository.findById(new UsageMetricId(usageMetric.getUserid(),usageMetric.getApplication(),usageMetric.getMetric()));
+		if(um.isPresent()) 
+		{
+			usageMetric.setUsage(um.get().getUsage()+count);	
+		}
+		else 
+		{
+			usageMetric.setUsage(count);			
+		}
+		
+		usageMetricRepository.save(usageMetric);
+		if(!usageMetric.getMetric().equals("usage")) 
+		{
+			um = usageMetricRepository.findById(new UsageMetricId(usageMetric.getUserid(),usageMetric.getApplication(),"usage"));
+			if(um.isPresent()) 
+			{
+				usageMetric.setUsage(um.get().getUsage()+count);	
+			}
+			else 
+			{
+				usageMetric.setUsage(count);			
+			}
+			usageMetric.setMetric("usage");
+			usageMetricRepository.save(usageMetric);
+			
+		}
+		
+	}
+
+	@Override
 	public List<UsageMetric> getAppUsage() {
 		// TODO Auto-generated method stub
 		
