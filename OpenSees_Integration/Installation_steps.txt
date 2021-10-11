@@ -1,5 +1,3 @@
-
-
 apt-get update && apt-get upgrade -y 
 
 apt-get --no-install-recommends -y install build-essential gcc g++ gfortran make cmake dkms tcl8.5 tcl8.5-dev zlib1g-dev flex bison python python-dev python3-dev git vim ca-certificates wget 
@@ -103,25 +101,12 @@ cd /home/OpenSees/ && make wipe && make
 
 cp /home/ActionLogger/OpenSees_Integration/SP_Try/OpenSees/Makefile.def /home/SP_Try/OpenSees/Makefile.def && \
 cp /home/ActionLogger/OpenSees_Integration/SP_Try/OpenSees/SRC/tcl/* /home/SP_Try/OpenSees/SRC/tcl/ && \
-cd /home/SP_Try/ && make wipe && make
+cd /home/SP_Try/OpenSees/ && make wipe && make
 
 cp /home/ActionLogger/OpenSees_Integration/SEQ/OpenSees/Makefile.def /home/SEQ/OpenSees/Makefile.def && \
 cp /home/ActionLogger/OpenSees_Integration/SEQ/OpenSees/SRC/tcl/* /home/SEQ/OpenSees/SRC/tcl/ && \
-cd /home/SEQ/ && make wipe && make
+cd /home/SEQ/OpenSees/ && make wipe && make
 
 cp -r /home/SP_Try/bin/OpenSeesSP /home/bin/ && cp -r /home/SEQ/bin/OpenSees /home/bin/
 
 export PATH="/home/bin:${PATH}"
-
-
-
-
-
-
-
-
-
-
-
-
-
