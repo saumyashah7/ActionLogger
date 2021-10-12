@@ -185,7 +185,7 @@ bool checkTimestamp(std::string timest)
 
 std::string getToken()
 {	
-	    const std::string url("https://eagerapp1.herokuapp.com/getToken");
+	    const std::string url("https://opuntia.utsa.edu/getToken");
 	    
 	    CURL* curl = curl_easy_init();
 	    
@@ -249,7 +249,7 @@ void sendPost()
 	struct curl_httppost *lastptr = NULL;
 	struct curl_slist *headerlist = NULL;
 	static const char buf[] =  "Expect:";
-	std::string strurl= "https://eagerapp1.herokuapp.com/upload/cpp/"+getToken();
+	std::string strurl= "https://opuntia.utsa.edu/upload/cpp/"+getToken();
 	char* url = const_cast<char*>(strurl.c_str());
 
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -310,9 +310,9 @@ void log(std::string s)
 	    {
 	        std::ifstream file(filename);
 	        json j = json::parse(file);
-	        std::string strcount = decrypt(j[encrypt("usage")].get<std::string>());
+	        std::string strcount = decrypt(j[encrypt("Number of times application used")].get<std::string>());
 	        int count = std::stoi(strcount);
-        	j[encrypt("usage")] = encrypt(std::to_string(++count));
+        	j[encrypt("Number of times application used")] = encrypt(std::to_string(++count));
 		if(checkTimestamp(decrypt(j[encrypt("EAGERlastsentdatetime")].get<std::string>())))
 		{
 			time_t now;
@@ -326,7 +326,7 @@ void log(std::string s)
 	    else 
 	    {
 	        logfile[encrypt("software-name")] = encrypt(application);
-	        logfile[encrypt("usage")] = encrypt("1");
+	        logfile[encrypt("Number of times application used")] = encrypt("1");
 		time_t now;
 		time(&now);
 		std::cout<<now<<std::endl;
@@ -345,9 +345,9 @@ void log(std::string s)
 	    {
 	        std::ifstream file(filename);
 	        json j = json::parse(file);
-	        std::string strcount = decrypt(j[encrypt("usage")].get<std::string>());
+	        std::string strcount = decrypt(j[encrypt("Number of times application used")].get<std::string>());
 	        int count = std::stoi(strcount);
-        	j[encrypt("usage")] = encrypt(std::to_string(++count));
+        	j[encrypt("Number of times application used")] = encrypt(std::to_string(++count));
 
 	        if (j.contains(encrypt(metric)))
 	        {
@@ -373,7 +373,7 @@ void log(std::string s)
 	    else 
 	    {
 	        logfile[encrypt("software-name")] = encrypt(application);
-	        logfile[encrypt("usage")] = encrypt("1");
+	        logfile[encrypt("Number of times application used")] = encrypt("1");
 		logfile[encrypt(metric)] = encrypt("1");
 		time_t now;
                 time(&now);
