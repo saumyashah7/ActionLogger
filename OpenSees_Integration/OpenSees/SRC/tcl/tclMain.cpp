@@ -233,7 +233,7 @@ g3TclMain(int argc, char **argv, Tcl_AppInitProc * appInitProc, int rank, int np
 #ifdef _PARALLEL_INTERPRETERS
     if (theMachineBroker->getPID() == 0) {
 #endif
-	log("OpenSees,tclmain");
+	log("OpenSees-Edited (Non-Commercial),Number of times tclmain module used");
 
 	/* fmk - beginning of modifications for OpenSees */
       if (OPS_suppressOpenSeesOutput == false) {
